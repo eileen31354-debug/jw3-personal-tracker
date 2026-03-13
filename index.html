@@ -179,9 +179,8 @@ td.ph{background:rgba(160,112,48,.02)!important}
   color:var(--ink);font-size:.82rem;font-family:inherit;resize:none;overflow:hidden;
   word-break:break-all;white-space:pre-wrap;line-height:1.5;box-sizing:border-box}
 .cl-textarea:focus{outline:none;border-color:var(--gold2)}
-.cl-del-btn{font-size:.6rem;padding:1px 4px;border:1px solid rgba(160,112,48,.2);
-  border-radius:2px;background:transparent;color:var(--ink3);cursor:pointer;margin-top:3px}
-.cl-del-btn:hover{background:rgba(200,60,60,.08);border-color:rgba(200,60,60,.3);color:#c44}
+.cl-del-btn{background:none;border:none;cursor:pointer;color:rgba(160,48,48,.4);font-size:.78rem;padding:1px 3px;transition:color .12s}
+.cl-del-btn:hover{color:var(--red)}
 
 /* ── Signin widget ── */
 .sc{display:inline-flex;align-items:center;border:1px solid var(--gold-bd);
@@ -1322,9 +1321,11 @@ function renderShop(){
     const th=document.createElement('th'); th.className='dn-th'; th.style.minWidth='88px'; th.style.verticalAlign='top';
     // label
     const lbl=document.createElement('div'); lbl.className='sp-th-lbl'; lbl.style.color='var(--ink2)'; lbl.style.fontSize='.85rem'; lbl.style.fontWeight='600'; lbl.textContent=col.label; th.appendChild(lbl);
-    // del button
-    const delBtn=document.createElement('button'); delBtn.className='sp-del-btn'; delBtn.textContent='✕ 删除';
-    delBtn.onclick=function(){ spDelCol(col.key); }; th.appendChild(delBtn);
+    // del button (only for user-added columns)
+    if(col.key.startsWith('sp_')){
+      const delBtn=document.createElement('button'); delBtn.className='sp-del-btn'; delBtn.textContent='✕ 删除';
+      delBtn.onclick=function(){ spDelCol(col.key); }; th.appendChild(delBtn);
+    }
     hr.appendChild(th);
   });
   // body
