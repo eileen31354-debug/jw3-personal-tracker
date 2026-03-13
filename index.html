@@ -795,7 +795,7 @@ function renderEv(){
     const ar = tbody.insertRow(); ar.className='acct-row';
     const ad = ar.insertCell(); ad.colSpan=totCols; ad.textContent=ac.lbl;
 
-    ac.chars.forEach(ch=>{
+    ac.chars.forEach((ch, chIdx)=>{
       const row = tbody.insertRow();
       const nd = row.insertCell(); nd.className='ch-d';
       nd.innerHTML=`<div class="cn">
@@ -807,14 +807,15 @@ function renderEv(){
       evs.forEach(ev=>{
         ev.tasks.forEach(t=>{
           const td = row.insertCell();
-          const v = gec(ev.id, ch.id, t.id);
+          const keyId = t.type==='signin' ? ac.id : ch.id;
+          const v = gec(ev.id, keyId, t.id);
           if(t.type==='signin'){
-            evTot++; evDn += Math.min(v, t.days)/t.days;
+            if(chIdx===0){evTot++; evDn += Math.min(v, t.days)/t.days;}
             const full = v>=t.days;
             td.innerHTML=`<div class="sc${full?' full':''}">
-              <button class="sc-b" onclick="scDec('${ev.id}','${ch.id}','${t.id}',${t.days})">−</button>
+              <button class="sc-b" onclick="scDec('${ev.id}','${ac.id}','${t.id}',${t.days})">−</button>
               <span class="sc-n">${v}/${t.days}</span>
-              <button class="sc-b" onclick="scInc('${ev.id}','${ch.id}','${t.id}',${t.days})">＋</button>
+              <button class="sc-b" onclick="scInc('${ev.id}','${ac.id}','${t.id}',${t.days})">＋</button>
             </div>`;
           } else {
             evTot++; if(v) evDn++;
@@ -837,11 +838,13 @@ function updEvStats(d,t){
 }
 function recompEvStats(){
   let t=0,d=0;
-  S.events.forEach(ev=>ev.tasks.forEach(tk=>ALL_CH.forEach(ch=>{
-    const v=gec(ev.id,ch.id,tk.id);
-    if(tk.type==='signin'){t++;d+=Math.min(v,tk.days)/tk.days}
-    else{t++;if(v)d++}
-  })));
+  S.events.forEach(ev=>ev.tasks.forEach(tk=>{
+    if(tk.type==='signin'){
+      ACCTS.forEach(ac=>{const v=gec(ev.id,ac.id,tk.id);t++;d+=Math.min(v,tk.days)/tk.days});
+    } else {
+      ALL_CH.forEach(ch=>{const v=gec(ev.id,ch.id,tk.id);t++;if(v)d++});
+    }
+  }));
   updEvStats(d,t);
 }
 function scInc(eid,cid,tid,max){const v=gec(eid,cid,tid);if(v<max){sec_(eid,cid,tid,v+1);renderEv()}}
