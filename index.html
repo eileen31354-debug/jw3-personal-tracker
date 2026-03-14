@@ -72,6 +72,14 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min
 /* Dungeon col header */
 .dn-th{background:rgba(160,112,48,.05);padding:10px 8px;text-align:center;
   font-size:.85rem;color:var(--ink2);vertical-align:middle;min-width:90px}
+/* Dungeon highlight filter */
+.dn-filter-btn{font-size:.78rem;padding:3px 10px;border:1px solid var(--gold-bd);border-radius:3px;background:transparent;color:var(--ink2);cursor:pointer;transition:all .15s}
+.dn-filter-btn:hover,.dn-filter-btn.active{background:rgba(160,112,48,.12);color:var(--gold)}
+.dn-filter-panel{display:none;margin:8px 0 4px;padding:10px 14px;background:var(--surf);border:1px solid var(--gold-bd);border-radius:4px;gap:6px 16px;flex-wrap:wrap}
+.dn-filter-panel.open{display:flex}
+.dn-filter-chk{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:.85rem;color:var(--ink2);user-select:none}
+.dn-filter-chk input{accent-color:var(--gold);width:14px;height:14px;cursor:pointer}
+.dn-row-dim td{opacity:.3}
 /* Completed list */
 .comp-item{display:flex;align-items:center;gap:12px;padding:12px 16px;
   background:var(--surf);border:1px solid var(--gold-bd);border-radius:4px;
@@ -520,7 +528,9 @@ td.ph{background:rgba(160,112,48,.02)!important}
         <span class="badge badge-w">周一重置</span>
         <div class="sec-line"></div>
         <span class="note-sm">北京时间每周一 07:00 重置</span>
+        <button class="dn-filter-btn" id="dn-filter-toggle" onclick="togDnFilter()">筛选角色 ▾</button>
       </div>
+      <div class="dn-filter-panel" id="dn-filter-panel"></div>
       <div class="tscroll" id="dn-wrap"></div>
     </div>
   </div>
@@ -641,6 +651,7 @@ function ld(){try{const s=localStorage.getItem('jw3v5');return s?JSON.parse(s):n
 function sv(){S._ts=Date.now();try{localStorage.setItem('jw3v5',JSON.stringify(S))}catch{}autoSyncPush();}
 let S = ld() || {events:[DEF_EV], ec:{}, wkTasks:DEF_WK_TASKS, wc:{}, wn:{}, rc:{}, rems:DEF_REMS, cn:{}, ct:{}, dc:{}, completedEvents:[], shopCols:null, shopData:{}, tabOrder:['event','weekly','dungeon','remind','craft','completed','shop']};
 if(!S.dc) S.dc={};
+if(!S.dcHighlight) S.dcHighlight=null; // null = all chars
 if(!S.completedEvents) S.completedEvents=[];
 if(!S.shopData) S.shopData={};
 if(!S.shopCols) S.shopCols=null;
@@ -982,12 +993,38 @@ function recompWkStats(){
   }));
   document.getElementById('s-wp').textContent = t?Math.round(d/t*100)+'%':'—';
 }
+function getDcHL(){ return S.dcHighlight ? new Set(S.dcHighlight) : new Set(ALL_CH.map(c=>c.id)); }
 function recompDcStats(){
-  let t=0,d=0;
-  ALL_CH.forEach(c=>DUNGEON_COLS.forEach(col=>{
-    t++;if(gdc(c.id,col.key))d++;
-  }));
+  const hl=getDcHL(); let t=0,d=0;
+  ALL_CH.forEach(c=>{ if(!hl.has(c.id))return; DUNGEON_COLS.forEach(col=>{ t++;if(gdc(c.id,col.key))d++; }); });
   document.getElementById('s-dp').textContent = t?Math.round(d/t*100)+'%':'—';
+}
+function togDnFilter(){
+  const panel=document.getElementById('dn-filter-panel');
+  const btn=document.getElementById('dn-filter-toggle');
+  const isOpen=panel.classList.toggle('open');
+  btn.classList.toggle('active',isOpen);
+  if(isOpen) renderDnFilterPanel();
+}
+function renderDnFilterPanel(){
+  const panel=document.getElementById('dn-filter-panel');
+  const hl=getDcHL();
+  panel.innerHTML='<span style="font-size:.75rem;color:var(--ink3);align-self:center;margin-right:4px">计入统计的角色：</span>';
+  ACCTS.forEach(ac=>{
+    ac.chars.forEach(ch=>{
+      const lbl=document.createElement('label'); lbl.className='dn-filter-chk';
+      const inp=document.createElement('input'); inp.type='checkbox'; inp.checked=hl.has(ch.id);
+      inp.onchange=function(){
+        const cur=getDcHL();
+        if(this.checked) cur.add(ch.id); else cur.delete(ch.id);
+        S.dcHighlight=[...cur]; sv(); renderDungeon(); recompDcStats();
+      };
+      const dot=document.createElement('span'); dot.style.cssText=`display:inline-block;width:8px;height:8px;border-radius:50%;background:${ch.col};flex-shrink:0`;
+      const nm=document.createElement('span'); nm.textContent=ch.n;
+      lbl.appendChild(inp); lbl.appendChild(dot); lbl.appendChild(nm);
+      panel.appendChild(lbl);
+    });
+  });
 }
 function delWkTask(id){
   const tk=S.wkTasks.find(t=>t.id===id); if(!tk)return;
@@ -1458,12 +1495,14 @@ function renderDungeon(){
       : `<div>${col.rest}</div>`;
     hr.appendChild(th);
   });
+  const hl=getDcHL();
   const tbody = tbl.createTBody();
   ACCTS.forEach(ac=>{
     const ar=tbody.insertRow(); ar.className='acct-row';
     const ad=ar.insertCell(); ad.colSpan=1+DUNGEON_COLS.length; ad.textContent=ac.lbl;
     ac.chars.forEach(ch=>{
       const row=tbody.insertRow();
+      if(!hl.has(ch.id)) row.classList.add('dn-row-dim');
       const nd=row.insertCell(); nd.className='ch-d';
       nd.innerHTML=`<div class="cn">
         <div class="cdot" style="background:${ch.col}"></div>
