@@ -497,10 +497,10 @@ td.ph{background:rgba(160,112,48,.02)!important}
       </div>
       <div class="rem-list" id="rem-list"></div>
       <div class="rem-form">
+        <div class="fg"><span class="fl">角色</span>
+          <select class="fi sm" id="r-owner"></select></div>
         <div class="fg"><span class="fl">提醒内容</span>
           <input class="fi" id="r-name" placeholder="提醒内容" style="width:150px"/></div>
-        <div class="fg"><span class="fl">角色 / 账号</span>
-          <input class="fi sm" id="r-owner" placeholder="角色"/></div>
         <div class="fg"><span class="fl">类型</span>
           <button class="urg-tog" id="r-urg-btn" onclick="togRUrgent()">普通</button></div>
         <div class="fg" id="r-days-grp" style="display:none">
@@ -1119,16 +1119,26 @@ function setRemOn(id,v){
   if(v) S.rc[id+'_'+bjKey()]=true; sv();
 }
 function renderRem(){
+  const sel=document.getElementById('r-owner');
+  if(sel && !sel.dataset.init){
+    sel.innerHTML='<option value="">—</option>'+
+      ACCTS.flatMap(ac=>ac.chars.map(ch=>`<option value="${esc(ch.n)}">${esc(ch.n)}</option>`)).join('');
+    sel.dataset.init='1';
+  }
   const list=document.getElementById('rem-list'); list.innerHTML='';
   const sorted=[...S.rems].sort((a,b)=>(b.urgent?1:0)-(a.urgent?1:0));
   sorted.forEach(r=>{
     const on=isRemOn(r.id);
     const d=document.createElement('div');
     d.className='rem-card'+(r.urgent?' urg':'');
+    const ch=r.owner?ALL_CH.find(c=>c.n===r.owner):null;
+    const ownerHtml=ch
+      ?`<span class="rem-own"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${ch.col};margin-right:3px;vertical-align:middle"></span><span style="color:${ch.txt}">${esc(ch.n)}</span></span>`
+      :r.owner?`<span class="rem-own">${esc(r.owner)}</span>`:'';
     d.innerHTML=`
       <div class="rem-cb${on?' on':''}" onclick="togRem('${r.id}',this)"></div>
+      ${ownerHtml}
       <span class="rem-name${on?' text-done':''}" style="${on?'text-decoration:line-through;opacity:.5':''}">${esc(r.name)}</span>
-      ${r.owner?`<span class="rem-own">${esc(r.owner)}</span>`:''}
       ${r.urgent?`<span class="rem-urg-badge">⚡ 限时${r.urgDays?r.urgDays+'天内':''}</span>`:''}
       <button class="btn-del-rem" onclick="delRem('${r.id}')">✕</button>`;
     list.appendChild(d);
@@ -1144,7 +1154,8 @@ function addReminder(){
   const own=document.getElementById('r-owner').value.trim();
   const urgDays=rUrgent?(parseInt(document.getElementById('r-days').value)||null):null;
   S.rems.push({id:gid(),name:n,owner:own,urgent:rUrgent,urgDays}); sv();
-  ['r-name','r-owner','r-days'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  ['r-name','r-days'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+  document.getElementById('r-owner').value='';
   rUrgent=false;
   document.getElementById('r-urg-btn').textContent='普通';
   document.getElementById('r-urg-btn').classList.remove('on');
