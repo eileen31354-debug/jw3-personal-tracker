@@ -675,11 +675,12 @@ let undoStack = [];
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function cdown(ds){
   if(!ds) return '';
-  const d=new Date(ds), n=new Date(), df=d-n;
+  const d=new Date(ds+'+08:00'), n=new Date(), df=d-n;
   if(isNaN(df)||df<0) return '已截止';
   const dy=Math.floor(df/86400000), hr=Math.floor((df%86400000)/3600000);
   return dy>0 ? `剩 ${dy} 天 ${hr} 时` : `剩 ${hr} 小时`;
 }
+
 function bjKey(){
   // Daily key for reminders: BJ date, day starts at 07:00 BJ
   const n=new Date(), bj=new Date(n.getTime()+8*3600000);
@@ -759,8 +760,8 @@ function renderEv(){
       <input class="ev-name-inp" value="${esc(ev.name)}" placeholder="活动名称"
         onblur="updEvName('${ev.id}',this.value)"/>
       <span style="font-size:.68rem;color:var(--ink3)">截止</span>
-      <input class="ev-date-inp" type="datetime-local" value="${esc(ev.endDate||'')}"
-        onchange="updEvDate('${ev.id}',this.value)"/>
+      <input class="ev-date-inp" type="date" value="${esc((ev.endDate||'').slice(0,10))}"
+        onchange="updEvDatePart('${ev.id}','date',this.value)"/>
       ${cdo?`<span class="ev-cd">⏱ ${cdo}</span>`:''}
       <button class="btn-icon" onclick="delEv('${ev.id}')">🗑 删除活动</button>
     </div>`;
@@ -899,7 +900,15 @@ function delTk(eid,tid){
   if(tk) showToast(`已删除任务列「${tk.name}」`, ()=>{ev.tasks.push(tk);sv();renderEv()});
 }
 function updEvName(eid,v){const ev=S.events.find(e=>e.id===eid);if(ev){ev.name=v;sv()}}
-function updEvDate(eid,v){const ev=S.events.find(e=>e.id===eid);if(ev){ev.endDate=v;sv();renderEv()}}
+function updEvDatePart(eid,part,v){
+  const ev=S.events.find(e=>e.id===eid);if(!ev)return;
+  const cur=ev.endDate||'';
+  const datePart=cur.slice(0,10)||'';
+  const timePart=cur.slice(11,16)||'07:00';
+  if(part==='date') ev.endDate=v?(v+'T'+timePart):'';
+  else ev.endDate=datePart?(datePart+'T'+v):'';
+  sv(); renderEv();
+}
 function updTkName(eid,tid,v){const ev=S.events.find(e=>e.id===eid);if(!ev)return;const t=ev.tasks.find(t=>t.id===tid);if(t){t.name=v;sv()}}
 function updTkDays(eid,tid,v){const ev=S.events.find(e=>e.id===eid);if(!ev)return;const t=ev.tasks.find(t=>t.id===tid);if(t){t.days=parseInt(v)||14;sv();renderEv()}}
 function togTkType(eid,tid){
