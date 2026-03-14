@@ -119,13 +119,14 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min
   padding:4px 12px;cursor:pointer;font-family:'Noto Serif SC',serif;font-size:.82rem}
 
 /* ── Table wrapper ── */
-.tscroll{overflow-x:auto;border:1px solid var(--gold-bd);border-radius:4px;
+.tscroll{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 280px);border:1px solid var(--gold-bd);border-radius:4px;
   box-shadow:0 2px 10px var(--shadow)}
 
 /* ── Base table ── */
 table.jt{border-collapse:collapse;font-size:15px;width:100%;background:var(--surf)}
 table.jt th,table.jt td{border:1px solid rgba(160,112,48,.13)}
-table.jt thead th{position:sticky;top:0;z-index:2;background:var(--surf)}
+table.jt thead th{position:sticky;top:0;z-index:2;background:var(--surf)!important}
+table.jt thead th.ch-h{top:0;left:0;z-index:3;background:#f5efe5!important}
 
 /* Event group header */
 table.jt th.eg{
@@ -139,7 +140,7 @@ table.jt th.tk{
   color:var(--ink2);font-size:.85rem;min-width:100px;vertical-align:top}
 /* Char column */
 table.jt th.ch-h,table.jt td.ch-d{
-  background:rgba(160,112,48,.05)!important;border-color:var(--gold-bd)!important;
+  background:#f5efe5!important;border-color:var(--gold-bd)!important;
   padding:10px 14px;white-space:nowrap;position:sticky;left:0;z-index:2}
 table.jt th.ch-h{text-align:left;color:var(--gold2);font-size:.78rem;letter-spacing:.18em;vertical-align:middle;font-weight:600}
 /* Add event col */
