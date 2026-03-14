@@ -585,28 +585,28 @@ td.ph{background:rgba(160,112,48,.02)!important}
 // ══════════════════════════════════════════
 const ACCTS = [
   {id:'a1',lbl:'账号一',chars:[
-    {id:'c1',n:'药姐',col:'#387976',txt:'#1a5452',main:true,icon:'药宗.png'},
-    {id:'c2',n:'扇姐',col:'#4a72b8',txt:'#2a509a',main:false},
-    {id:'c3',n:'灯娘',col:'#8060b8',txt:'#5a3a9a',main:false},
+    {id:'c1', n:'药姐',  col:'#387976',txt:'#1a5452',main:true, icon:'药宗.png'},
+    {id:'c2', n:'扇姐',  col:'#BDAFB2',txt:'#71696B',main:false,icon:'段氏.png',iconStyle:'width:16px;height:16px;object-fit:contain;vertical-align:middle;margin-right:2px;flex-shrink:0'},
+    {id:'c3', n:'灯娘',  col:'#9085DD',txt:'#565085',main:false,icon:'衍天宗.png'},
   ]},
   {id:'a2',lbl:'账号二',chars:[
-    {id:'c4',n:'毒萝',col:'#7a3a9a',txt:'#5a1a7a',main:true},
-    {id:'c5',n:'道姑',col:'#3a5a9a',txt:'#1a3a7a',main:false},
-    {id:'c6',n:'弓娘',col:'#9a8020',txt:'#6a5800',main:false},
+    {id:'c4', n:'毒萝',  col:'#9A89B7',txt:'#5C526E',main:true, icon:'五毒.png'},
+    {id:'c5', n:'道姑',  col:'#7686AF',txt:'#475069',main:false,icon:'纯阳.png'},
+    {id:'c6', n:'弓娘',  col:'#C1A258',txt:'#746135',main:false,icon:'万灵.png'},
   ]},
   {id:'a3',lbl:'账号三',chars:[
-    {id:'c7',n:'秀萝',col:'#9a4a7a',txt:'#7a2a5a',main:true},
-    {id:'c8',n:'琴娘',col:'#3a7a4a',txt:'#1a5a2a',main:false},
-    {id:'c9',n:'伞娘',col:'#3a7a9a',txt:'#1a5a7a',main:false},
+    {id:'c7', n:'秀萝',  col:'#D19A91',txt:'#7D5C57',main:true, icon:'七秀.png'},
+    {id:'c8', n:'琴娘',  col:'#89BEC4',txt:'#527276',main:false,icon:'长歌.png'},
+    {id:'c9', n:'伞娘',  col:'#6A79A7',txt:'#404964',main:false,icon:'蓬莱.png'},
   ]},
   {id:'a4',lbl:'账号四',chars:[
-    {id:'c10',n:'花萝',col:'#8a3838',txt:'#6a1818',main:false},
-    {id:'c11',n:'花姐',col:'#9a5858',txt:'#7a3838',main:false},
+    {id:'c10',n:'花萝',  col:'#8F81AB',txt:'#564D67',main:false,icon:'万花.png'},
+    {id:'c11',n:'花姐',  col:'#8F81AB',txt:'#564D67',main:false,icon:'万花.png'},
   ]},
   {id:'a5',lbl:'账号五',chars:[
-    {id:'c12',n:'二小姐',col:'#3a6a8a',txt:'#1a4a6a',main:false},
-    {id:'c13',n:'喵姐', col:'#8a7020',txt:'#6a5000',main:false},
-    {id:'c14',n:'炮萝', col:'#8a4a28',txt:'#6a2a08',main:false},
+    {id:'c12',n:'二小姐',col:'#CBA574',txt:'#7A6346',main:false,icon:'藏剑.png'},
+    {id:'c13',n:'喵姐',  col:'#AF5F47',txt:'#69392B',main:false,icon:'明教.png'},
+    {id:'c14',n:'炮萝',  col:'#4F8CC4',txt:'#2F5476',main:false,icon:'唐门.png'},
   ]},
 ];
 const ALL_CH = ACCTS.flatMap(a=>a.chars);
@@ -811,7 +811,7 @@ function renderEv(){
       const row = tbody.insertRow();
       const nd = row.insertCell(); nd.className='ch-d';
       nd.innerHTML=`<div class="cn">
-        ${ch.icon?`<img src="${ch.icon}" style="height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0"/>`:`<div class="cdot" style="background:${ch.col}"></div>`}
+        ${ch.icon?`<img src="${ch.icon}" style="${ch.iconStyle||'height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0'}"/>`:`<div class="cdot" style="background:${ch.col}"></div>`}
         <span class="clbl" style="color:${ch.txt}">${ch.n}</span>
         ${ch.main?'<span class="ctag">大号</span>':''}
       </div>`;
@@ -962,7 +962,7 @@ function renderWk(){
       const row=tbody.insertRow();
       const nd=row.insertCell(); nd.className='ch-d';
       nd.innerHTML=`<div class="cn">
-        ${ch.icon?`<img src="${ch.icon}" style="height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0"/>`:`<div class="cdot" style="background:${ch.col}"></div>`}
+        ${ch.icon?`<img src="${ch.icon}" style="${ch.iconStyle||'height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0'}"/>`:`<div class="cdot" style="background:${ch.col}"></div>`}
         <span class="clbl" style="color:${ch.txt}">${ch.n}</span>
         ${ch.main?'<span class="ctag">大号</span>':''}
       </div>`;
@@ -1395,7 +1395,7 @@ function renderShop(){
       const row=tbody.insertRow();
       const nd=row.insertCell(); nd.className='ch-d';
       const cn=document.createElement('div'); cn.className='cn';
-      if(ch.icon){const ic=document.createElement('img');ic.src=ch.icon;ic.style.cssText='height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0';cn.appendChild(ic);}
+      if(ch.icon){const ic=document.createElement('img');ic.src=ch.icon;ic.style.cssText=ch.iconStyle||'height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0';cn.appendChild(ic);}
       else{const dot=document.createElement('div'); dot.className='cdot'; dot.style.background=ch.col; cn.appendChild(dot);}
       const nm=document.createElement('span'); nm.className='clbl'; nm.style.color=ch.txt; nm.textContent=ch.n; cn.appendChild(nm);
       if(ch.main){ const tag=document.createElement('span'); tag.className='ctag'; tag.textContent='大号'; cn.appendChild(tag); }
@@ -1460,7 +1460,7 @@ function renderCollect(){
       var row=tbody.insertRow();
       var nd=row.insertCell(); nd.className='ch-d';
       var cn=document.createElement('div'); cn.className='cn';
-      if(ch.icon){var ic=document.createElement('img');ic.src=ch.icon;ic.style.cssText='height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0';cn.appendChild(ic);}
+      if(ch.icon){var ic=document.createElement('img');ic.src=ch.icon;ic.style.cssText=ch.iconStyle||'height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0';cn.appendChild(ic);}
       else{var dot=document.createElement('div'); dot.className='cdot'; dot.style.background=ch.col; cn.appendChild(dot);}
       var nm=document.createElement('span'); nm.className='clbl'; nm.style.color=ch.txt; nm.textContent=ch.n; cn.appendChild(nm);
       if(ch.main){var tag=document.createElement('span'); tag.className='ctag'; tag.textContent='大号'; cn.appendChild(tag);}
@@ -1528,7 +1528,7 @@ function renderDungeon(){
       if(!hl.has(ch.id)) row.classList.add('dn-row-dim');
       const nd=row.insertCell(); nd.className='ch-d';
       nd.innerHTML=`<div class="cn">
-        ${ch.icon?`<img src="${ch.icon}" style="height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0"/>`:`<div class="cdot" style="background:${ch.col}"></div>`}
+        ${ch.icon?`<img src="${ch.icon}" style="${ch.iconStyle||'height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0'}"/>`:`<div class="cdot" style="background:${ch.col}"></div>`}
         <span class="clbl" style="color:${ch.txt}">${ch.n}</span>
         ${ch.main?'<span class="ctag">大号</span>':''}
       </div>`;
