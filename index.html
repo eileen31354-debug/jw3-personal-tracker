@@ -782,7 +782,7 @@ function renderEv(){
         <input class="ev-date-inp" type="date" value="${esc((ev.endDate||'').slice(0,10))}"
           onchange="updEvDatePart('${ev.id}','date',this.value)"/>
         ${cdo?`<span class="ev-cd">⏱ ${cdo}</span>`:''}
-        <button class="btn-icon" onclick="delEv('${ev.id}')">🗑 删除活动</button>
+        <button class="btn-icon" onclick="delEv('${ev.id}')" title="删除活动">✕</button>
       </div>
     </div>`;
     r1.appendChild(th);
