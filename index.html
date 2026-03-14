@@ -215,7 +215,8 @@ td.ph{background:rgba(160,112,48,.02)!important}
 .sc.full .sc-b:hover{background:rgba(46,112,80,.18)}
 
 /* ── Event controls ── */
-.ev-ctrl{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+.ev-ctrl{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.ev-ctrl-row{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
 .ev-name-inp{background:transparent;border:none;border-bottom:1px solid rgba(160,112,48,.3);
   color:var(--gold);font-family:'Noto Serif SC',serif;font-size:1rem;font-weight:600;
   outline:none;padding:1px 4px;min-width:80px;max-width:160px}
@@ -224,6 +225,9 @@ td.ph{background:rgba(160,112,48,.02)!important}
   color:var(--ink2);font-size:.72rem;outline:none;padding:3px 7px;
   font-family:'Noto Sans SC',sans-serif}
 .ev-cd{font-size:.72rem;color:var(--red);white-space:nowrap;font-weight:500}
+.btn-multitask{background:none;border:1px solid var(--gold-bd);border-radius:2px;color:var(--ink3);cursor:pointer;font-size:.7rem;padding:3px 7px;transition:all .13s;white-space:nowrap}
+.btn-multitask.on{border-color:var(--gold2);color:var(--gold);background:var(--gold-bg)}
+.btn-multitask:hover{border-color:var(--gold2);color:var(--gold)}
 .btn-icon{background:none;border:1px solid var(--red-bd);border-radius:2px;
   color:var(--red);cursor:pointer;font-size:.7rem;padding:3px 9px;
   transition:all .13s;white-space:nowrap;font-family:'Noto Serif SC',serif}
@@ -762,18 +766,24 @@ function renderEv(){
   chTh.textContent='角色'; r1.appendChild(chTh);
 
   evs.forEach(ev=>{
-    const span = ev.tasks.length + 1; // +1 for add-task col
+    const multiTask = ev.multiTask !== false;
+    const span = ev.tasks.length + (multiTask ? 1 : 0);
     const th = document.createElement('th');
     th.className='eg'; th.colSpan=span;
     const cdo = cdown(ev.endDate);
     th.innerHTML=`<div class="ev-ctrl">
-      <input class="ev-name-inp" value="${esc(ev.name)}" placeholder="活动名称"
-        onblur="updEvName('${ev.id}',this.value)"/>
-      <span style="font-size:.68rem;color:var(--ink3)">截止</span>
-      <input class="ev-date-inp" type="date" value="${esc((ev.endDate||'').slice(0,10))}"
-        onchange="updEvDatePart('${ev.id}','date',this.value)"/>
-      ${cdo?`<span class="ev-cd">⏱ ${cdo}</span>`:''}
-      <button class="btn-icon" onclick="delEv('${ev.id}')">🗑 删除活动</button>
+      <div class="ev-ctrl-row">
+        <input class="ev-name-inp" value="${esc(ev.name)}" placeholder="活动名称"
+          onblur="updEvName('${ev.id}',this.value)"/>
+        <button class="btn-multitask${multiTask?' on':''}" onclick="togEvMultiTask('${ev.id}')" title="切换单/多任务列">${multiTask?'多列':'单列'}</button>
+      </div>
+      <div class="ev-ctrl-row">
+        <span style="font-size:.68rem;color:var(--ink3)">截止</span>
+        <input class="ev-date-inp" type="date" value="${esc((ev.endDate||'').slice(0,10))}"
+          onchange="updEvDatePart('${ev.id}','date',this.value)"/>
+        ${cdo?`<span class="ev-cd">⏱ ${cdo}</span>`:''}
+        <button class="btn-icon" onclick="delEv('${ev.id}')">🗑 删除活动</button>
+      </div>
     </div>`;
     r1.appendChild(th);
   });
@@ -787,6 +797,7 @@ function renderEv(){
   // ── Row 2: task headers ──
   const r2 = thead.insertRow();
   evs.forEach(ev=>{
+    const multiTask = ev.multiTask !== false;
     ev.tasks.forEach(t=>{
       const th = document.createElement('th'); th.className='tk';
       th.innerHTML=`<div class="tk-ctrl">
@@ -802,14 +813,16 @@ function renderEv(){
       </div>`;
       r2.appendChild(th);
     });
-    const addTkTh = document.createElement('th'); addTkTh.className='tk add-tk-col';
-    addTkTh.innerHTML=`<button class="btn-add-tk" onclick="addTk('${ev.id}')" title="添加任务列">＋</button>`;
-    r2.appendChild(addTkTh);
+    if(multiTask){
+      const addTkTh = document.createElement('th'); addTkTh.className='tk add-tk-col';
+      addTkTh.innerHTML=`<button class="btn-add-tk" onclick="addTk('${ev.id}')" title="添加任务列">＋</button>`;
+      r2.appendChild(addTkTh);
+    }
   });
 
   // ── Body ──
   const tbody = tbl.createTBody();
-  const totCols = 1 + evs.reduce((s,e)=>s+e.tasks.length+1, 0) + 1;
+  const totCols = 1 + evs.reduce((s,e)=>s+e.tasks.length+(e.multiTask!==false?1:0), 0) + 1;
   let evTot=0, evDn=0;
 
   ACCTS.forEach(ac=>{
@@ -844,7 +857,7 @@ function renderEv(){
             td.innerHTML=`<div class="cb${v?' on':''}" onclick="togEv('${ev.id}','${ch.id}','${t.id}',this)"></div>`;
           }
         });
-        row.insertCell().className='ph'; // spacer
+        if(ev.multiTask!==false) row.insertCell().className='ph'; // spacer
       });
       row.insertCell().className='ph'; // add-ev spacer
     });
@@ -895,9 +908,13 @@ function delEv(id){
   });
 }
 function addEv(){
-  S.events.push({id:gid(),name:'新限时活动',endDate:'',
-    tasks:[{id:gid(),name:'任务一',type:'check'}]});
+  S.events.push({id:gid(),name:'新限时活动',endDate:'',multiTask:true,
+    tasks:[{id:gid(),name:'任务一',type:'check'},{id:gid(),name:'任务二',type:'check'}]});
   sv(); renderEv();
+}
+function togEvMultiTask(eid){
+  const ev=S.events.find(e=>e.id===eid); if(!ev)return;
+  ev.multiTask=ev.multiTask===false?true:false; sv(); renderEv();
 }
 function addTk(eid){
   const ev=S.events.find(e=>e.id===eid); if(!ev) return;
