@@ -91,6 +91,15 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min
 .comp-date{font-size:.65rem;color:var(--ink4);white-space:nowrap;margin-left:auto}
 .comp-del-btn{flex-shrink:0;padding:2px 7px;border:1px solid rgba(160,112,48,.2);border-radius:3px;background:transparent;color:var(--ink4);cursor:pointer;font-size:.75rem;transition:all .15s}
 .comp-del-btn:hover{background:rgba(200,60,60,.08);border-color:rgba(200,60,60,.3);color:#c44}
+/* Priority banner */
+.prio-banner{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;padding:7px 18px;background:rgba(160,112,48,.04);border-bottom:1px solid var(--gold-bd);min-height:34px}
+.prio-banner-lbl{font-size:.68rem;letter-spacing:.12em;color:var(--ink3);white-space:nowrap;flex-shrink:0}
+.prio-sep{width:1px;height:14px;background:var(--gold-bd);flex-shrink:0}
+.prio-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;font-size:.78rem;white-space:nowrap}
+.prio-chip.urg{background:rgba(160,80,30,.1);border:1px solid rgba(160,80,30,.3);color:#8a3808}
+.prio-chip.norm{background:rgba(160,112,48,.08);border:1px solid rgba(160,112,48,.25);color:#7a5010}
+.prio-chip.craft{background:rgba(58,122,200,.07);border:1px solid rgba(58,122,200,.22);color:#2a4a7a}
+.prio-none{font-size:.75rem;color:var(--ink4);letter-spacing:.06em}
 .tab.active{color:var(--gold);border-bottom-color:var(--gold);
   background:linear-gradient(180deg,rgba(160,112,48,.08),transparent);
   font-weight:700;letter-spacing:.1em}
@@ -469,6 +478,7 @@ td.ph{background:rgba(160,112,48,.02)!important}
   <div class="stat"><div class="stat-n" id="s-dp" style="color:var(--jade2)">—</div><div class="stat-l">副本完成率</div></div>
 </div>
 
+<div class="prio-banner" id="priority-banner"></div>
 <div class="tabs" id="tab-bar"></div>
 
 <div class="main">
@@ -1156,7 +1166,7 @@ function renderRem(){
 function togRem(id,el){
   const v=isRemOn(id); setRemOn(id,!v);
   el.classList.toggle('on',!v);
-  renderRem();
+  renderRem(); renderPriorityBanner();
 }
 function addReminder(){
   const n=document.getElementById('r-name').value.trim(); if(!n)return;
@@ -1169,12 +1179,12 @@ function addReminder(){
   document.getElementById('r-urg-btn').textContent='普通';
   document.getElementById('r-urg-btn').classList.remove('on');
   document.getElementById('r-days-grp').style.display='none';
-  renderRem();
+  renderRem(); renderPriorityBanner();
 }
 function delRem(id){
   const r=S.rems.find(r=>r.id===id);
-  S.rems=S.rems.filter(r=>r.id!==id); sv(); renderRem();
-  if(r) showToast(`已删除提醒「${r.name}」`, ()=>{S.rems.push(r);sv();renderRem()});
+  S.rems=S.rems.filter(r=>r.id!==id); sv(); renderRem(); renderPriorityBanner();
+  if(r) showToast(`已删除提醒「${r.name}」`, ()=>{S.rems.push(r);sv();renderRem();renderPriorityBanner();});
 }
 
 // ══════════════════════════════════════════
@@ -1229,7 +1239,7 @@ function addCraftTodo(cid){
   todos.push({id:'t'+Date.now(),txt,done:false});
   saveCraftTodos(cid,todos);
   inp.value='';
-  renderCraft();
+  renderCraft(); renderPriorityBanner();
   // refocus
   setTimeout(()=>{const el=document.getElementById('ci-'+cid);if(el)el.focus();},50);
 }
@@ -1240,13 +1250,13 @@ function completeCraftTodo(cid,tid){
   const item=todos[idx];
   todos.splice(idx,1);
   saveCraftTodos(cid,todos);
-  renderCraft();
+  renderCraft(); renderPriorityBanner();
   // Undo via toast
   showToast(`已完成「${item.txt}」`, ()=>{
     const cur=getCraftTodos(cid);
     cur.splice(idx,0,item);
     saveCraftTodos(cid,cur);
-    renderCraft();
+    renderCraft(); renderPriorityBanner();
   });
 }
 
@@ -1576,12 +1586,62 @@ function renderCompleted(){
 }
 
 // ══════════════════════════════════════════
+// ══════════════════════════════════════════
+// PRIORITY BANNER
+// ══════════════════════════════════════════
+function renderPriorityBanner(){
+  const banner=document.getElementById('priority-banner');
+  if(!banner) return;
+  const iconHtml=(ch,size)=>ch&&ch.icon?`<img src="${ch.icon}" style="${ch.iconStyle||'height:'+size+'px;vertical-align:middle;margin-right:2px;flex-shrink:0'}"/>`:'';
+  // Reminders not done today: urgent first, then normal
+  const urgChars=[]; const urgSeen=new Set();
+  const normChars=[]; const normSeen=new Set();
+  S.rems.forEach(r=>{
+    if(!isRemOn(r.id)&&r.owner){
+      if(r.urgent&&!urgSeen.has(r.owner)){
+        urgSeen.add(r.owner);
+        urgChars.push(ALL_CH.find(c=>c.n===r.owner)||{n:r.owner,icon:null});
+      } else if(!r.urgent&&!normSeen.has(r.owner)){
+        normSeen.add(r.owner);
+        normChars.push(ALL_CH.find(c=>c.n===r.owner)||{n:r.owner,icon:null});
+      }
+    }
+  });
+  // Craft chars with pending todos
+  const craftChars=[];
+  const craftSeen=new Set();
+  CRAFTS.forEach(c=>{
+    if(!craftSeen.has(c.own)&&getCraftTodos(c.id).some(t=>!t.done)){
+      craftSeen.add(c.own);
+      craftChars.push(ALL_CH.find(ch=>ch.n===c.own)||{n:c.own,icon:null});
+    }
+  });
+  if(urgChars.length===0&&normChars.length===0&&craftChars.length===0){
+    banner.innerHTML='<span class="prio-none">今日无待办 ✓</span>'; return;
+  }
+  let html='<span class="prio-banner-lbl">今日关注</span>';
+  urgChars.forEach(ch=>{
+    html+=`<span class="prio-chip urg">${iconHtml(ch,13)}<span>${esc(ch.n)}</span><span style="font-size:.65rem;margin-left:2px">⚡限时</span></span>`;
+  });
+  if(urgChars.length>0&&(normChars.length>0||craftChars.length>0)) html+='<span class="prio-sep"></span>';
+  normChars.forEach(ch=>{
+    html+=`<span class="prio-chip norm">${iconHtml(ch,13)}<span>${esc(ch.n)}</span><span style="font-size:.65rem;margin-left:2px">提醒</span></span>`;
+  });
+  if(normChars.length>0&&craftChars.length>0) html+='<span class="prio-sep"></span>';
+  craftChars.forEach(ch=>{
+    html+=`<span class="prio-chip craft">${iconHtml(ch,13)}<span>${esc(ch.n)}</span><span style="font-size:.65rem;margin-left:2px">技艺</span></span>`;
+  });
+  banner.innerHTML=html;
+}
+
+// ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
 renderTabs();
 showTab('event', null);
 recompWkStats();
 recompDcStats();
+renderPriorityBanner();
 </script>
 
 <!-- ── Sync Button ── -->
