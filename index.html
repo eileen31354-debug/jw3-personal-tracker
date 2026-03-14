@@ -1674,7 +1674,7 @@ function updateStickyHeader(){
   const theadRect = thead.getBoundingClientRect();
   const tblRect   = tbl.getBoundingClientRect();
   const tsRect    = tscroll.getBoundingClientRect();
-  if(theadRect.bottom > 0 || tblRect.bottom <= 0) return;
+  if(theadRect.top >= 0 || tblRect.bottom <= 0) return;
   // Build fixed clone
   const wrap = document.createElement('div');
   wrap.id = 'jt-sticky-hdr';
