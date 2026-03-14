@@ -119,14 +119,12 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min
   padding:4px 12px;cursor:pointer;font-family:'Noto Serif SC',serif;font-size:.82rem}
 
 /* ── Table wrapper ── */
-.tscroll{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 280px);border:1px solid var(--gold-bd);border-radius:4px;
+.tscroll{overflow-x:auto;border:1px solid var(--gold-bd);border-radius:4px;
   box-shadow:0 2px 10px var(--shadow)}
 
 /* ── Base table ── */
 table.jt{border-collapse:collapse;font-size:15px;width:100%;background:var(--surf)}
 table.jt th,table.jt td{border:1px solid rgba(160,112,48,.13)}
-table.jt thead th{position:sticky;top:0;z-index:2;background:var(--surf)!important}
-table.jt thead th.ch-h{top:0;left:0;z-index:3;background:#f5efe5!important}
 
 /* Event group header */
 table.jt th.eg{
@@ -1363,6 +1361,7 @@ function showTab(n,b){
   if(b) b.classList.add('active');
   ({event:renderEv, weekly:renderWk, remind:renderRem, craft:renderCraft,
     dungeon:renderDungeon, completed:renderCompleted, shop:renderShop, collect:renderCollect})[n]?.();
+  const old=document.getElementById('jt-sticky-hdr'); if(old) old.remove();
 }
 
 // ══════════════════════════════════════════
@@ -1652,6 +1651,55 @@ function renderPriorityBanner(){
   });
   banner.innerHTML=html;
 }
+
+// ══════════════════════════════════════════
+// STICKY TABLE HEADER (JS)
+// ══════════════════════════════════════════
+let _stickyRaf = null;
+function scheduleUpdateStickyHeader(){
+  if(_stickyRaf) return;
+  _stickyRaf = requestAnimationFrame(()=>{ _stickyRaf=null; updateStickyHeader(); });
+}
+function updateStickyHeader(){
+  const old = document.getElementById('jt-sticky-hdr');
+  if(old) old.remove();
+  const panel = document.querySelector('.panel.active');
+  if(!panel) return;
+  const tscroll = panel.querySelector('.tscroll');
+  if(!tscroll) return;
+  const tbl = tscroll.querySelector('table.jt');
+  if(!tbl) return;
+  const thead = tbl.querySelector('thead');
+  if(!thead) return;
+  const theadRect = thead.getBoundingClientRect();
+  const tblRect   = tbl.getBoundingClientRect();
+  const tsRect    = tscroll.getBoundingClientRect();
+  if(theadRect.bottom > 0 || tblRect.bottom <= 0) return;
+  // Build fixed clone
+  const wrap = document.createElement('div');
+  wrap.id = 'jt-sticky-hdr';
+  wrap.style.cssText = `position:fixed;top:0;left:${Math.round(tsRect.left)}px;width:${Math.round(tsRect.width)}px;z-index:50;overflow:hidden;pointer-events:none;border-bottom:1px solid rgba(160,112,48,.2);box-shadow:0 2px 6px rgba(0,0,0,.1)`;
+  const ct = document.createElement('table');
+  ct.className = 'jt';
+  ct.style.cssText = `border-collapse:collapse;font-size:15px;background:var(--surf);table-layout:fixed;width:${tbl.offsetWidth}px`;
+  const theadClone = thead.cloneNode(true);
+  theadClone.querySelectorAll('input,button,select').forEach(el=>{ el.setAttribute('tabindex','-1'); el.style.pointerEvents='none'; });
+  ct.appendChild(theadClone);
+  wrap.appendChild(ct);
+  document.body.appendChild(wrap);
+  // Match each th width exactly
+  const origThs  = thead.querySelectorAll('tr:first-child th');
+  const cloneThs = wrap.querySelectorAll('tr:first-child th');
+  origThs.forEach((th,i)=>{ if(cloneThs[i]) cloneThs[i].style.width = th.getBoundingClientRect().width+'px'; });
+  // Sync horizontal scroll
+  ct.style.transform = `translateX(${-tscroll.scrollLeft}px)`;
+}
+window.addEventListener('scroll', scheduleUpdateStickyHeader, {passive:true});
+window.addEventListener('resize', scheduleUpdateStickyHeader, {passive:true});
+// Capture tscroll horizontal scroll
+document.addEventListener('scroll', e=>{
+  if(e.target && e.target.classList && e.target.classList.contains('tscroll')) scheduleUpdateStickyHeader();
+}, true);
 
 // ══════════════════════════════════════════
 // INIT
