@@ -585,7 +585,7 @@ td.ph{background:rgba(160,112,48,.02)!important}
 // ══════════════════════════════════════════
 const ACCTS = [
   {id:'a1',lbl:'账号一',chars:[
-    {id:'c1',n:'药姐',col:'#3a7a3a',txt:'#1a5a1a',main:true},
+    {id:'c1',n:'药姐',col:'#387976',txt:'#1a5452',main:true,icon:'药宗.png'},
     {id:'c2',n:'扇姐',col:'#4a72b8',txt:'#2a509a',main:false},
     {id:'c3',n:'灯娘',col:'#8060b8',txt:'#5a3a9a',main:false},
   ]},
@@ -811,7 +811,7 @@ function renderEv(){
       const row = tbody.insertRow();
       const nd = row.insertCell(); nd.className='ch-d';
       nd.innerHTML=`<div class="cn">
-        <div class="cdot" style="background:${ch.col}"></div>
+        ${ch.icon?`<img src="${ch.icon}" style="height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0"/>`:`<div class="cdot" style="background:${ch.col}"></div>`}
         <span class="clbl" style="color:${ch.txt}">${ch.n}</span>
         ${ch.main?'<span class="ctag">大号</span>':''}
       </div>`;
@@ -962,7 +962,7 @@ function renderWk(){
       const row=tbody.insertRow();
       const nd=row.insertCell(); nd.className='ch-d';
       nd.innerHTML=`<div class="cn">
-        <div class="cdot" style="background:${ch.col}"></div>
+        ${ch.icon?`<img src="${ch.icon}" style="height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0"/>`:`<div class="cdot" style="background:${ch.col}"></div>`}
         <span class="clbl" style="color:${ch.txt}">${ch.n}</span>
         ${ch.main?'<span class="ctag">大号</span>':''}
       </div>`;
@@ -1395,7 +1395,8 @@ function renderShop(){
       const row=tbody.insertRow();
       const nd=row.insertCell(); nd.className='ch-d';
       const cn=document.createElement('div'); cn.className='cn';
-      const dot=document.createElement('div'); dot.className='cdot'; dot.style.background=ch.col; cn.appendChild(dot);
+      if(ch.icon){const ic=document.createElement('img');ic.src=ch.icon;ic.style.cssText='height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0';cn.appendChild(ic);}
+      else{const dot=document.createElement('div'); dot.className='cdot'; dot.style.background=ch.col; cn.appendChild(dot);}
       const nm=document.createElement('span'); nm.className='clbl'; nm.style.color=ch.txt; nm.textContent=ch.n; cn.appendChild(nm);
       if(ch.main){ const tag=document.createElement('span'); tag.className='ctag'; tag.textContent='大号'; cn.appendChild(tag); }
       nd.appendChild(cn);
@@ -1459,7 +1460,8 @@ function renderCollect(){
       var row=tbody.insertRow();
       var nd=row.insertCell(); nd.className='ch-d';
       var cn=document.createElement('div'); cn.className='cn';
-      var dot=document.createElement('div'); dot.className='cdot'; dot.style.background=ch.col; cn.appendChild(dot);
+      if(ch.icon){var ic=document.createElement('img');ic.src=ch.icon;ic.style.cssText='height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0';cn.appendChild(ic);}
+      else{var dot=document.createElement('div'); dot.className='cdot'; dot.style.background=ch.col; cn.appendChild(dot);}
       var nm=document.createElement('span'); nm.className='clbl'; nm.style.color=ch.txt; nm.textContent=ch.n; cn.appendChild(nm);
       if(ch.main){var tag=document.createElement('span'); tag.className='ctag'; tag.textContent='大号'; cn.appendChild(tag);}
       nd.appendChild(cn);
@@ -1526,7 +1528,7 @@ function renderDungeon(){
       if(!hl.has(ch.id)) row.classList.add('dn-row-dim');
       const nd=row.insertCell(); nd.className='ch-d';
       nd.innerHTML=`<div class="cn">
-        <div class="cdot" style="background:${ch.col}"></div>
+        ${ch.icon?`<img src="${ch.icon}" style="height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0"/>`:`<div class="cdot" style="background:${ch.col}"></div>`}
         <span class="clbl" style="color:${ch.txt}">${ch.n}</span>
         ${ch.main?'<span class="ctag">大号</span>':''}
       </div>`;
