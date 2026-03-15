@@ -243,6 +243,10 @@ table.jt tr.acct-row td{
 table.jt td{padding:9px 7px;text-align:center;vertical-align:middle;transition:background .1s}
 table.jt tbody tr:hover td{background:rgba(141,115,84,.07)}
 table.jt tbody tr:hover td.ch-d{background:rgba(141,115,84,.13)!important}
+table.jt tr.wk-stripe td{background:rgba(141,115,84,.032)}
+table.jt tr.wk-stripe td.ch-d{background:rgba(141,115,84,.055)!important}
+table.jt tr.wk-stripe:hover td{background:rgba(141,115,84,.09)!important}
+table.jt tr.wk-stripe:hover td.ch-d{background:rgba(141,115,84,.15)!important}
 td.ph{background:rgba(160,112,48,.02)!important}
 
 /* ── Char chip ── */
@@ -349,10 +353,27 @@ table.jt th.tk.tk-single{vertical-align:bottom}
   align-items:center;justify-content:center;width:100%;height:100%;gap:2px;line-height:1.3}
 .btn-add-ev-vert:hover{color:var(--gold)}
 
+/* ── Weekly table header row ── */
+#wk-wrap table.jt thead th{
+  background:rgba(160,112,48,.09)!important;
+  border-bottom:2px solid rgba(160,112,48,.32)!important}
+
 /* ── Weekly task header controls ── */
-.wk-th-ctrl{display:flex;flex-direction:column;align-items:center;gap:4px}
-.wk-del-btn{background:none;border:none;cursor:pointer;color:rgba(160,48,48,.4);font-size:.78rem;padding:1px 3px;transition:color .12s}
-.wk-del-btn:hover{color:var(--red)}
+#wk-wrap table.jt th.tk{
+  padding:6px 8px 8px!important;
+  vertical-align:bottom;overflow:visible;white-space:nowrap}
+.wk-th-ctrl{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
+.wk-th-name{
+  white-space:nowrap;
+  text-align:center;line-height:1.45;
+  display:block;cursor:default}
+.wk-del-btn{
+  position:absolute;top:2px;right:2px;
+  background:none;border:none;cursor:pointer;
+  padding:2px;line-height:1;border-radius:3px;
+  color:transparent;transition:color .15s,background .15s}
+table.jt th.tk:hover .wk-del-btn,.wk-del-btn:focus{color:rgba(160,48,48,.5)}
+.wk-del-btn:hover{color:var(--red)!important;background:rgba(160,48,48,.08)!important}
 
 /* ── Weekly note ── */
 .w-note{display:block;width:92px;margin:3px auto 0;font-size:.68rem;
@@ -590,6 +611,12 @@ table.jt th.tk.tk-single{vertical-align:bottom}
 .acct-row td{cursor:pointer;user-select:none}
 .acct-col-btn{background:none;border:none;cursor:pointer;color:var(--gold2);font-size:.82rem;padding:0 6px;transition:transform .15s;flex-shrink:0}
 .acct-actions{display:flex;align-items:center;gap:8px}
+.wk-acct-prog{margin-left:auto;font-size:.65rem;font-family:'Noto Sans SC',sans-serif;
+  font-variant-numeric:tabular-nums;padding:1px 8px;border-radius:10px;
+  border:1px solid;letter-spacing:.02em;flex-shrink:0}
+.wk-prog-done{color:var(--jade2);border-color:var(--jade-bd);background:var(--jade-bg)}
+.wk-prog-part{color:var(--gold);border-color:var(--gold-bd);background:var(--gold-bg)}
+.wk-prog-none{color:var(--ink4);border-color:rgba(160,112,48,.15);background:transparent}
 .acct-onedone{font-size:.65rem;padding:2px 8px;border:1px solid var(--jade-bd);border-radius:2px;
   background:linear-gradient(180deg,rgba(74,125,99,.18),rgba(74,125,99,.1));
   color:#2a5a42;cursor:pointer;transition:all .13s;white-space:nowrap;font-weight:600;
@@ -686,9 +713,6 @@ table.jt tr.row-done td.td-done{background:rgba(46,112,80,.12)!important}
         <div class="sec-line"></div>
       </div>
       <div class="tscroll" id="wk-wrap"></div>
-      <div class="wk-add-bar">
-        <button class="btn-sec" onclick="openAddWkModal()">＋ 添加周常任务列</button>
-      </div>
     </div>
   </div>
   <div id="tab-remind" class="panel">
@@ -1207,6 +1231,15 @@ function swc(c,t,v){
 }
 function gwn(c,t){return S.wn[c+'_'+t]||''}
 
+const WK_BREAK_CHARS='换买刷做打领收采交完存拆获得升';
+function wkBoldName(n){
+  for(let i=1;i<n.length;i++){
+    if(WK_BREAK_CHARS.includes(n[i])){
+      return esc(n.slice(0,i))+'<strong>'+esc(n.slice(i))+'</strong>';
+    }
+  }
+  return esc(n);
+}
 function renderWk(){
   const wrap = document.getElementById('wk-wrap');
   const tasks = S.wkTasks;
@@ -1218,26 +1251,35 @@ function renderWk(){
   chH.textContent='角色'; hr.appendChild(chH);
 
   tasks.forEach(t=>{
-    const th = document.createElement('th'); th.className='tk'; th.style.minWidth='100px';
+    const th = document.createElement('th'); th.className='tk';
     th.innerHTML=`<div class="wk-th-ctrl">
-      <span style="color:var(--ink2);font-size:.85rem;font-weight:600">${esc(t.n)}</span>
-      <button class="wk-del-btn" onclick="delWkTask('${t.id}')" title="删除此列">✕ 删除</button>
+      <span class="wk-th-name" style="color:var(--ink2);font-size:.82rem;font-weight:600">${esc(t.n)}</span>
+      <button class="wk-del-btn" onclick="delWkTask('${t.id}')" title="删除此列"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,5 13,5"/><path d="M6 5V3h4v2"/><path d="M4 5l1 8h6l1-8"/><line x1="6.5" y1="7.5" x2="6.5" y2="11"/><line x1="9.5" y1="7.5" x2="9.5" y2="11"/></svg></button>
     </div>`;
     hr.appendChild(th);
   });
+  const addTh=document.createElement('th'); addTh.className='tk add-tk-col';
+  addTh.innerHTML=`<button class="btn-add-tk" onclick="openAddWkModal()" title="添加周常任务列">＋</button>`;
+  hr.appendChild(addTh);
 
   const tbody = tbl.createTBody();
   let tot=0, dn=0;
 
+  let _wkZebra=0;
   ACCTS.forEach(ac=>{
     const ar=tbody.insertRow(); ar.className='acct-row'; ar.dataset.acid=ac.id;
     ar.onclick=function(e){if(e.target.tagName!=='BUTTON')toggleCollapse(ac.id)};
-    const ad=ar.insertCell(); ad.colSpan=1+tasks.length;
+    const ad=ar.insertCell(); ad.colSpan=2+tasks.length; // +1 for add-col header
     const collapsedWk=S.collapsed.includes(ac.id);
-    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsedWk?'▶':'▼'}</button><span>${ac.lbl}</span></div>`;
+    let acDn=0,acTot=0;
+    ac.chars.forEach(ch=>{ tasks.forEach(t=>{ if(t.chars.includes(ch.id)){acTot++;if(gwc(ch.id,t.id))acDn++;} }); });
+    const acPct=acTot?Math.round(acDn/acTot*100):0;
+    const acCls=acDn===acTot&&acTot>0?'wk-prog-done':acDn>0?'wk-prog-part':'wk-prog-none';
+    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsedWk?'▶':'▼'}</button><span>${ac.lbl}</span><span class="wk-acct-prog ${acCls}">${acDn}/${acTot}</span></div>`;
 
     ac.chars.forEach(ch=>{
       const row=tbody.insertRow(); row.dataset.acct=ac.id;
+      if(_wkZebra++%2===1) row.classList.add('wk-stripe');
       if(S.collapsed.includes(ac.id)) row.classList.add('char-row-hidden');
       const nd=row.insertCell(); nd.className='ch-d';
       nd.innerHTML=`<div class="cn">
@@ -1263,6 +1305,7 @@ function renderWk(){
           td.innerHTML=cbH;
         }
       });
+      row.insertCell(); // placeholder for add-col header
     });
   });
 
