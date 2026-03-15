@@ -369,18 +369,23 @@ table.jt th.tk.tk-single{vertical-align:bottom}
   display:block;cursor:default}
 .wk-del-btn{
   position:absolute;top:2px;right:2px;
-  background:none;border:none;cursor:pointer;
+  background:transparent;border:none;cursor:pointer;
   padding:2px;line-height:1;border-radius:3px;
-  color:transparent;transition:color .15s,background .15s}
-table.jt th.tk:hover .wk-del-btn,.wk-del-btn:focus{color:rgba(160,48,48,.5)}
-.wk-del-btn:hover{color:var(--red)!important;background:rgba(160,48,48,.08)!important}
+  color:transparent;transition:color .15s,background .15s;
+  -webkit-appearance:none;appearance:none}
+table.jt th.tk:hover .wk-del-btn,.wk-del-btn:focus{color:rgba(160,48,48,.45)}
+.wk-del-btn:hover{color:var(--red)!important;background:rgba(160,48,48,.1)!important}
 
 /* ── Weekly note ── */
 .w-note{display:block;width:92px;margin:3px auto 0;font-size:.68rem;
-  padding:3px 5px;background:white;border:1px solid rgba(160,112,48,.18);
-  border-radius:2px;color:var(--ink2);text-align:center;outline:none;
-  font-family:'Noto Sans SC',sans-serif}
-.w-note:focus{border-color:var(--gold)}
+  padding:3px 5px;
+  background:rgba(141,115,84,.06);
+  border:none;border-bottom:1px solid rgba(160,112,48,.22);
+  border-radius:0;color:var(--ink2);text-align:center;outline:none;
+  font-family:'Noto Sans SC',sans-serif;
+  resize:none;overflow:hidden;min-height:22px;height:auto;line-height:1.5;
+  box-sizing:border-box}
+.w-note:focus{border-bottom-color:var(--gold);background:rgba(141,115,84,.1)}
 
 /* ── Section ── */
 .sec{margin-bottom:24px}
@@ -612,11 +617,11 @@ table.jt th.tk:hover .wk-del-btn,.wk-del-btn:focus{color:rgba(160,48,48,.5)}
 .acct-col-btn{background:none;border:none;cursor:pointer;color:var(--gold2);font-size:.82rem;padding:0 6px;transition:transform .15s;flex-shrink:0}
 .acct-actions{display:flex;align-items:center;gap:8px}
 .wk-acct-prog{margin-left:auto;font-size:.65rem;font-family:'Noto Sans SC',sans-serif;
-  font-variant-numeric:tabular-nums;padding:1px 8px;border-radius:10px;
+  font-variant-numeric:tabular-nums;font-weight:700;padding:1px 8px;border-radius:10px;
   border:1px solid;letter-spacing:.02em;flex-shrink:0}
-.wk-prog-done{color:var(--jade2);border-color:var(--jade-bd);background:var(--jade-bg)}
-.wk-prog-part{color:var(--gold);border-color:var(--gold-bd);background:var(--gold-bg)}
-.wk-prog-none{color:var(--ink4);border-color:rgba(160,112,48,.15);background:transparent}
+.wk-prog-done{color:#2e7d52;border-color:rgba(46,125,82,.35);background:rgba(46,125,82,.1)}
+.wk-prog-part{color:#2563a8;border-color:rgba(37,99,168,.3);background:rgba(37,99,168,.08)}
+.wk-prog-none{color:var(--ink4);border-color:rgba(120,110,100,.2);background:transparent}
 .acct-onedone{font-size:.65rem;padding:2px 8px;border:1px solid var(--jade-bd);border-radius:2px;
   background:linear-gradient(180deg,rgba(74,125,99,.18),rgba(74,125,99,.1));
   color:#2a5a42;cursor:pointer;transition:all .13s;white-space:nowrap;font-weight:600;
@@ -1299,8 +1304,9 @@ function renderWk(){
         const cbH=`<div class="cb${chk?' on':''}" onclick="togWc('${ch.id}','${t.id}',this)"></div>`;
         if(t.note){
           const no=gwn(ch.id,t.id);
-          td.innerHTML=cbH+`<input class="w-note" value="${esc(no)}" placeholder="备注"
-            onblur="S.wn['${ch.id}_${t.id}']=this.value;sv()" onclick="event.stopPropagation()"/>`;
+          td.innerHTML=cbH+`<textarea class="w-note" placeholder="备注" rows="1"
+            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+            onblur="S.wn['${ch.id}_${t.id}']=this.value;sv()" onclick="event.stopPropagation()">${esc(no)}</textarea>`;
         } else {
           td.innerHTML=cbH;
         }
@@ -1310,6 +1316,7 @@ function renderWk(){
   });
 
   wrap.innerHTML=''; wrap.appendChild(tbl);
+  wrap.querySelectorAll('textarea.w-note').forEach(ta=>{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px'});
   const wpPct2=tot?Math.round(dn/tot*100):0;
   document.getElementById('s-wp').textContent = tot?wpPct2+'%':'—';
   document.getElementById('s-wp-bar').style.width=wpPct2+'%';
