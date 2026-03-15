@@ -252,6 +252,10 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min
   92%{transform:translateX(0) rotate(0)}}
 .prio-chip.norm{background:rgba(160,112,48,.08);border:1px solid rgba(160,112,48,.25);color:#7a5010}
 .prio-chip.craft{background:rgba(58,122,200,.07);border:1px solid rgba(58,122,200,.22);color:#2a4a7a}
+.craft-card-hl{animation:craftCardHl .9s ease-out 1 forwards}
+@keyframes craftCardHl{
+  0%{box-shadow:0 0 0 3px rgba(58,122,200,.5),0 0 14px rgba(58,122,200,.3)}
+  100%{box-shadow:none}}
 .prio-none{font-size:.75rem;color:var(--ink4);letter-spacing:.06em}
 .tab.active{color:var(--gold);border-bottom-color:var(--gold);
   background:linear-gradient(180deg,rgba(160,112,48,.08),transparent);
@@ -674,7 +678,8 @@ table.jt th.tk:hover .wk-del-btn,.wk-del-btn:focus{color:rgba(160,48,48,.45)}
 .craft-todo-txt{flex:1;font-size:.9rem;font-family:'Noto Serif SC',serif}
 .craft-add-row{display:flex;gap:6px;margin-top:4px}
 .craft-add-inp{flex:1;padding:6px 10px;font-size:.9rem;font-family:'Noto Serif SC',serif;
-  border-radius:3px;outline:none;background:rgba(255,255,255,.7)}
+  border-radius:3px;outline:none;background:rgba(255,255,255,.7);
+  box-shadow:inset 0 1px 4px rgba(0,0,0,.09)}
 .craft-add-inp:focus{outline:none}
 .craft-add-btn{padding:6px 14px;border-radius:3px;cursor:pointer;font-family:'Noto Serif SC',serif;
   font-size:.88rem;font-weight:600;transition:all .12s;white-space:nowrap;border:1.5px solid}
@@ -1049,10 +1054,10 @@ const DEF_REMS = [
 ];
 
 const CRAFTS = [
-  {id:'cr1',n:'铸造',own:'药姐',ico:'⚒',cls:'craft-c1'},
-  {id:'cr2',n:'缝纫',own:'弓娘',ico:'🪡',cls:'craft-c2'},
-  {id:'cr3',n:'医术',own:'毒萝',ico:'⚕',cls:'craft-c3'},
-  {id:'cr4',n:'烹饪',own:'秀萝',ico:'🍲',cls:'craft-c4'},
+  {id:'cr1',n:'铸造',own:'药姐',ico:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="22" x2="14" y2="10"/><path d="M14 10l2-2 4 4-2 2z"/></svg>',cls:'craft-c1'},
+  {id:'cr2',n:'缝纫',own:'弓娘',ico:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="9" y1="6" x2="20" y2="17"/><line x1="9" y1="18" x2="20" y2="7"/></svg>',cls:'craft-c2'},
+  {id:'cr3',n:'医术',own:'毒萝',ico:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11c0 5.5 3.5 9 8 9s8-3.5 8-9"/><line x1="2" y1="11" x2="22" y2="11"/><line x1="10" y1="11" x2="18" y2="3"/></svg>',cls:'craft-c3'},
+  {id:'cr4',n:'烹饪',own:'秀萝',ico:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7l2 12h10l2-12"/><line x1="3" y1="7" x2="21" y2="7"/><path d="M5 7V5H3V7"/><path d="M19 7V5h2v2"/></svg>',cls:'craft-c4'},
 ];
 
 // ══════════════════════════════════════════
@@ -1856,6 +1861,7 @@ function renderCraft(){
     const todos=getCraftTodos(c.id);
     const d=document.createElement('div');
     d.className=`craft-card ${c.cls}`;
+    d.id='craft-card-'+c.id;
 
     // Build todo items HTML
     const todosHtml = todos.map((item,i)=>`
@@ -2316,6 +2322,17 @@ function jumpToRemOwner(owner){
   _remJumpOwner=owner;
   showTab('remind',document.querySelector('.tab[data-tab="remind"]'));
 }
+function jumpToCraft(craftId){
+  showTab('craft',document.querySelector('.tab[data-tab="craft"]'));
+  setTimeout(()=>{
+    const card=document.getElementById('craft-card-'+craftId);
+    if(card){
+      card.classList.add('craft-card-hl');
+      setTimeout(()=>card.classList.remove('craft-card-hl'),1000);
+      card.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }
+  },80);
+}
 function renderPriorityBanner(){
   const banner=document.getElementById('priority-banner');
   if(!banner) return;
@@ -2338,16 +2355,14 @@ function renderPriorityBanner(){
     .map(([n,{cnt,minDays}])=>({ch:ALL_CH.find(c=>c.n===n)||{n,icon:null},cnt,minDays:minDays===Infinity?null:minDays}))
     .sort((a,b)=>(a.minDays??Infinity)-(b.minDays??Infinity));
   const normChars=Object.entries(normMap).map(([n,cnt])=>({ch:ALL_CH.find(c=>c.n===n)||{n,icon:null},cnt}));
-  // Craft chars with pending todos
-  const craftChars=[];
-  const craftSeen=new Set();
+  // Craft items with pending todos (one chip per craft type)
+  const craftItems=[];
   CRAFTS.forEach(c=>{
-    if(!craftSeen.has(c.own)&&getCraftTodos(c.id).some(t=>!t.done)){
-      craftSeen.add(c.own);
-      craftChars.push(ALL_CH.find(ch=>ch.n===c.own)||{n:c.own,icon:null});
+    if(getCraftTodos(c.id).some(t=>!t.done)){
+      craftItems.push({craft:c,ch:ALL_CH.find(ch=>ch.n===c.own)||{n:c.own,icon:null}});
     }
   });
-  if(urgChars.length===0&&normChars.length===0&&craftChars.length===0){
+  if(urgChars.length===0&&normChars.length===0&&craftItems.length===0){
     banner.innerHTML='<span class="prio-none">今日无待办 ✓</span>'; return;
   }
   let html='<span class="prio-banner-lbl">今日关注</span>';
@@ -2356,13 +2371,13 @@ function renderPriorityBanner(){
     const daysTip=minDays!=null?` ${minDays}天`:'';
     html+=`<span class="prio-chip urg${isCrit?' crit':''}" onclick="jumpToRemOwner('${esc(ch.n)}')">${iconHtml(ch,13)}<span>${esc(ch.n)}</span><span style="font-size:.65rem;margin-left:2px">⚡限时${daysTip}</span>${cnt>1?`<span class="prio-chip-cnt">${cnt}</span>`:''}</span>`;
   });
-  if(urgChars.length>0&&(normChars.length>0||craftChars.length>0)) html+='<span class="prio-sep"></span>';
+  if(urgChars.length>0&&(normChars.length>0||craftItems.length>0)) html+='<span class="prio-sep"></span>';
   normChars.forEach(({ch,cnt})=>{
     html+=`<span class="prio-chip norm" onclick="jumpToRemOwner('${esc(ch.n)}')">${iconHtml(ch,13)}<span>${esc(ch.n)}</span><span style="font-size:.65rem;margin-left:2px">提醒</span>${cnt>1?`<span class="prio-chip-cnt">${cnt}</span>`:''}</span>`;
   });
-  if(normChars.length>0&&craftChars.length>0) html+='<span class="prio-sep"></span>';
-  craftChars.forEach(({ch,cnt})=>{
-    html+=`<span class="prio-chip craft" onclick="jumpToRemOwner('${esc(ch.n)}')">${iconHtml(ch,13)}<span>${esc(ch.n)}</span><span style="font-size:.65rem;margin-left:2px">技艺</span>${cnt>1?`<span class="prio-chip-cnt">${cnt}</span>`:''}</span>`;
+  if(normChars.length>0&&craftItems.length>0) html+='<span class="prio-sep"></span>';
+  craftItems.forEach(({craft,ch})=>{
+    html+=`<span class="prio-chip craft" onclick="jumpToCraft('${esc(craft.id)}')">${iconHtml(ch,13)}<span style="font-size:.65rem;opacity:.75;margin-right:1px">[${esc(ch.n)}]</span><span>${esc(craft.n)}</span></span>`;
   });
   banner.innerHTML=html;
 }
