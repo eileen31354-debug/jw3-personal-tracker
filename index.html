@@ -521,8 +521,11 @@ table.jt th.tk.tk-single{vertical-align:bottom}
 @keyframes iconSpin{to{transform:rotate(360deg)}}
 .sync-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center}
 .sync-overlay.open{display:flex}
-.sync-modal{background:var(--surf);border:1px solid var(--gold-bd);border-radius:6px;
-  padding:24px;width:min(480px,92vw);box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.sync-modal{background:rgba(250,246,239,.94);border:1px solid var(--gold-bd);border-radius:8px;
+  padding:24px;width:min(480px,92vw);
+  box-shadow:0 12px 40px rgba(80,55,20,.22),0 3px 10px rgba(0,0,0,.1);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  max-height:90vh;overflow-y:auto}
 .sync-title{font-family:'Noto Serif SC',serif;font-size:1.05rem;color:var(--gold);
   font-weight:700;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
 .sync-close{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--ink3);padding:0 4px}
@@ -530,7 +533,8 @@ table.jt th.tk.tk-single{vertical-align:bottom}
 .sync-section{margin-bottom:16px}
 .sync-label{font-size:.72rem;color:var(--ink3);margin-bottom:5px;letter-spacing:.06em}
 .sync-url-inp{width:100%;padding:7px 10px;border:1px solid var(--gold-bd);border-radius:3px;
-  background:var(--bg2);color:var(--ink);font-size:.8rem;box-sizing:border-box}
+  background:var(--bg2);color:var(--ink);font-size:.8rem;box-sizing:border-box;
+  box-shadow:inset 0 2px 4px rgba(80,55,20,.08)}
 .sync-url-inp:focus{outline:none;border-color:var(--gold2)}
 .sync-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .sync-action{padding:8px 16px;border-radius:3px;border:1px solid var(--gold-bd);
@@ -549,6 +553,28 @@ table.jt th.tk.tk-single{vertical-align:bottom}
 .sync-help{font-size:.7rem;color:var(--ink3);line-height:1.6;background:var(--bg2);
   padding:10px 12px;border-radius:3px;border:1px solid var(--gold-bd)}
 .sync-help code{font-size:.68rem;background:rgba(160,112,48,.1);padding:1px 4px;border-radius:2px}
+.sync-meta{font-size:.65rem;color:var(--ink4);margin-top:2px;letter-spacing:.02em}
+.sync-action.danger{border-color:rgba(160,80,30,.4);color:#8a3808;background:rgba(160,80,30,.07)}
+.sync-action.danger:hover{background:rgba(160,80,30,.13)}
+.sync-accd-toggle{display:flex;align-items:center;justify-content:space-between;
+  width:100%;background:var(--gold-bg);border:1px solid var(--gold-bd);cursor:pointer;
+  padding:7px 10px;border-radius:4px;font-size:.75rem;color:var(--ink2);
+  font-family:'Noto Sans SC',sans-serif;transition:background .15s}
+.sync-accd-toggle:hover{background:rgba(160,112,48,.14)}
+.sync-accd-arrow{transition:transform .2s;font-size:.6rem;color:var(--ink3)}
+.sync-accd-arrow.open{transform:rotate(180deg)}
+.sync-accd-body{margin-top:6px}
+.sync-code-wrap{position:relative;margin:8px 0}
+.sync-code-block{display:block;font-size:.65rem;background:rgba(30,20,10,.05);
+  padding:10px 12px;padding-right:64px;border-radius:4px;border:1px solid var(--gold-bd);
+  word-break:break-all;white-space:pre-wrap;line-height:1.6;color:var(--ink2);
+  font-family:'Courier New',monospace;max-height:180px;overflow-y:auto}
+.sync-copy-btn{position:absolute;top:6px;right:6px;padding:3px 9px;
+  background:var(--surf);border:1px solid var(--gold-bd);border-radius:3px;
+  font-size:.65rem;color:var(--gold);cursor:pointer;font-family:'Noto Sans SC',sans-serif;
+  transition:background .15s}
+.sync-copy-btn:hover{background:rgba(160,112,48,.15)}
+.sync-copy-btn.copied{color:var(--jade2);border-color:var(--jade-bd)}
 .sync-dot{position:absolute;top:-3px;left:-3px;width:8px;height:8px;border-radius:50%;
   background:transparent;transition:background .3s;
   border:1.5px solid rgba(250,246,239,.9)}
@@ -2048,7 +2074,13 @@ function scDirectInput(span,eid,cid,tid,max){
 <div class="sync-overlay" id="sync-overlay" onclick="if(event.target===this)syncCloseModal()">
   <div class="sync-modal">
     <div class="sync-title">
-      <span>☁️ 数据同步 · Google Sheet</span>
+      <div>
+        <div style="display:flex;align-items:center;gap:7px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold)"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          <span>数据同步 · Google Sheet</span>
+        </div>
+        <div class="sync-meta" id="sync-meta">上次同步：读取中…</div>
+      </div>
       <button class="sync-close" onclick="syncCloseModal()">✕</button>
     </div>
 
@@ -2060,8 +2092,8 @@ function scDirectInput(span,eid,cid,tid,max){
 
     <!-- Cloud actions -->
     <div class="sync-btns">
-      <button class="sync-action primary" onclick="syncExportToSheet()">📤 导出到 Google Sheet</button>
-      <button class="sync-action" onclick="syncImportFromSheet()">📥 从 Google Sheet 恢复</button>
+      <button class="sync-action primary" onclick="syncExportToSheet()">↑ 导出到 Sheet</button>
+      <button class="sync-action danger" onclick="syncImportFromSheet()">↓ 从 Sheet 恢复</button>
     </div>
     <div class="sync-status" id="sync-status"></div>
 
@@ -2071,22 +2103,29 @@ function scDirectInput(span,eid,cid,tid,max){
     <div class="sync-section">
       <div class="sync-label">本地文件备份（无需 Apps Script）</div>
       <div class="sync-btns">
-        <button class="sync-action" onclick="syncDownloadFile()">💾 下载备份文件</button>
-        <button class="sync-action" onclick="document.getElementById('sync-file-inp').click()">📂 从文件恢复</button>
+        <button class="sync-action primary" onclick="syncDownloadFile()">↓ 下载备份</button>
+        <button class="sync-action danger" onclick="document.getElementById('sync-file-inp').click()">↑ 从文件恢复</button>
         <input type="file" id="sync-file-inp" accept=".json" style="display:none" onchange="syncLoadFile(event)">
       </div>
     </div>
 
     <hr class="sync-divider">
 
-    <!-- Help -->
-    <div class="sync-help" id="sync-help-toggle">
-      <strong>如何配置 Apps Script？</strong><br>
+    <!-- Help accordion -->
+    <div>
+      <button class="sync-accd-toggle" onclick="syncToggleHelp()">
+        <span>如何配置 Apps Script？</span>
+        <span class="sync-accd-arrow" id="sync-help-arrow">▼</span>
+      </button>
+      <div class="sync-accd-body" id="sync-help-body" style="display:none">
+    <div class="sync-help">
       1. 打开 Google Sheet → <code>扩展程序 → Apps 脚本</code><br>
-      2. 粘贴以下代码并保存：<br><br>
-      <code>var SECRET='YOUR_SECRET_KEY';function doGet(e){if(e.parameter.key!==SECRET)return ContentService.createTextOutput('{"err":"unauthorized"}').setMimeType(ContentService.MimeType.JSON);var s=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();var v=s.getRange('A1').getValue();return ContentService.createTextOutput(v||'{}').setMimeType(ContentService.MimeType.JSON);}function doPost(e){try{var d=JSON.parse(e.postData.contents);if(d._key!==SECRET)return ContentService.createTextOutput('{"err":"unauthorized"}').setMimeType(ContentService.MimeType.JSON);delete d._key;var s=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();s.getRange('A1').setValue(JSON.stringify(d));return ContentService.createTextOutput('{"ok":true}').setMimeType(ContentService.MimeType.JSON);}catch(err){return ContentService.createTextOutput('{"err":"'+err.message+'"}').setMimeType(ContentService.MimeType.JSON);}}</code><br><br>
+      2. 粘贴以下代码并保存：<br>
+      <div class="sync-code-wrap"><button class="sync-copy-btn" onclick="syncCopyCode()">复制</button><code id="sync-code-block" class="sync-code-block">var SECRET='YOUR_SECRET_KEY';function doGet(e){if(e.parameter.key!==SECRET)return ContentService.createTextOutput('{"err":"unauthorized"}').setMimeType(ContentService.MimeType.JSON);var s=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();var v=s.getRange('A1').getValue();return ContentService.createTextOutput(v||'{}').setMimeType(ContentService.MimeType.JSON);}function doPost(e){try{var d=JSON.parse(e.postData.contents);if(d._key!==SECRET)return ContentService.createTextOutput('{"err":"unauthorized"}').setMimeType(ContentService.MimeType.JSON);delete d._key;var s=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();s.getRange('A1').setValue(JSON.stringify(d));return ContentService.createTextOutput('{"ok":true}').setMimeType(ContentService.MimeType.JSON);}catch(err){return ContentService.createTextOutput('{"err":"'+err.message+'"}').setMimeType(ContentService.MimeType.JSON);}}</code></div>
       3. <code>部署 → 新建部署 → 类型：网络应用 → 权限：任何人</code><br>
       4. 复制 Web App URL 填入上方输入框
+    </div>
+      </div>
     </div>
   </div>
 </div>
@@ -2094,6 +2133,7 @@ function scDirectInput(span,eid,cid,tid,max){
 <script>
 // ── SYNC ──
 const SYNC_URL_KEY = 'jw3_gas_url';
+const LAST_SYNC_KEY = 'jw3_last_sync';
 const SYNC_SECRET  = '9695l5==sy';
 let _syncPushTimer = null;   // debounce push
 let _syncBusy = false;       // prevent concurrent pulls
@@ -2108,11 +2148,29 @@ function syncDot(state){ // 'ok' | 'err' | 'ing' | ''
   if(lb){
     if(state==='ing') lb.textContent='同步中…';
     else if(state==='ok'){
+      localStorage.setItem(LAST_SYNC_KEY, Date.now());
       lb.textContent='同步成功';
       setTimeout(()=>{ if(lb.textContent==='同步成功') lb.textContent='数据同步'; },2000);
     } else if(state==='err') lb.textContent='同步失败';
     else lb.textContent='数据同步';
   }
+}
+function syncToggleHelp(){
+  const body=document.getElementById('sync-help-body');
+  const arrow=document.getElementById('sync-help-arrow');
+  if(!body) return;
+  const open=body.style.display==='none';
+  body.style.display=open?'':'none';
+  if(arrow) arrow.classList.toggle('open',open);
+}
+function syncCopyCode(){
+  const el=document.getElementById('sync-code-block');
+  if(!el) return;
+  navigator.clipboard.writeText(el.textContent).then(()=>{
+    const btn=el.parentElement.querySelector('.sync-copy-btn');
+    if(btn){btn.textContent='已复制 ✓';btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='复制';btn.classList.remove('copied');},2000);}
+  });
 }
 
 // ── 自动推送（每次 sv() 调用，防抖 2s） ──
@@ -2159,6 +2217,15 @@ async function autoSyncPull(){
 function syncOpenModal(){
   document.getElementById('sync-url-inp').value = localStorage.getItem(SYNC_URL_KEY)||'';
   document.getElementById('sync-overlay').classList.add('open');
+  const metaEl=document.getElementById('sync-meta');
+  if(metaEl){
+    const ts=localStorage.getItem(LAST_SYNC_KEY);
+    if(ts){
+      const d=new Date(+ts);
+      const s=`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      metaEl.textContent='上次同步：'+s;
+    } else metaEl.textContent='上次同步：从未';
+  }
   syncSetStatus('','');
 }
 function syncCloseModal(){ document.getElementById('sync-overlay').classList.remove('open'); }
