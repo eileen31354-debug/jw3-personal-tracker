@@ -226,7 +226,14 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min
 .prio-sep{width:auto;height:auto;background:none;flex-shrink:0;
   color:rgba(160,112,48,.28);font-size:.5rem;line-height:1}
 .prio-sep::before{content:'✦'}
-.prio-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;font-size:.78rem;white-space:nowrap}
+.prio-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;font-size:.78rem;white-space:nowrap;cursor:pointer;transition:filter .15s}
+.prio-chip:hover{filter:brightness(.92)}
+.prio-chip-cnt{font-size:.6rem;background:rgba(0,0,0,.13);border-radius:8px;padding:1px 5px;margin-left:1px;font-variant-numeric:tabular-nums;font-weight:700;line-height:1.4}
+/* Reminder card jump-highlight */
+.rem-card-hl{animation:remCardHl .9s ease-out 1 forwards}
+@keyframes remCardHl{
+  0%{box-shadow:0 0 0 3px rgba(160,112,48,.55),0 0 12px rgba(160,112,48,.25)}
+  100%{box-shadow:none}}
 .prio-chip.urg{background:rgba(160,80,30,.1);border:1px solid rgba(160,80,30,.3);color:#8a3808;
   animation:chipWiggle 7s ease-in-out infinite}
 .prio-chip.urg:nth-child(2){animation-delay:.3s}
@@ -530,11 +537,24 @@ table.jt th.tk:hover .wk-del-btn,.wk-del-btn:focus{color:rgba(160,48,48,.45)}
 
 /* ── Reminders ── */
 .rem-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.rem-grp-hdr{display:flex;align-items:center;gap:8px;padding:4px 0 2px;margin-top:4px}
+.rem-grp-hdr:first-child{margin-top:0}
+.rem-grp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.rem-grp-lbl{font-size:.68rem;letter-spacing:.1em;font-weight:600}
+.rem-grp-line{flex:1;height:1px;background:rgba(160,112,48,.15)}
 .rem-card{display:flex;align-items:center;gap:11px;padding:12px 16px;
   background:var(--surf);border:1px solid var(--gold-bd);border-radius:4px;
-  transition:border-color .15s}
+  transition:opacity .25s,background .25s,border-color .25s,box-shadow .25s}
 .rem-card.urg{border-color:rgba(160,80,30,.55);background:rgba(160,80,30,.04);
   box-shadow:0 0 10px rgba(160,80,30,.1)}
+.rem-card.done{opacity:.5;background:rgba(141,115,84,.03);border-color:rgba(160,112,48,.1);box-shadow:none}
+.rem-card.done.urg{border-color:rgba(160,80,30,.18)!important;background:transparent!important;box-shadow:none!important;animation:none!important}
+.rem-card.urg-critical{border-color:rgba(185,35,15,.65)!important;
+  background:linear-gradient(90deg,rgba(185,35,15,.07),rgba(185,35,15,.03))!important;
+  animation:urgCardPulse 2s ease-in-out infinite}
+@keyframes urgCardPulse{
+  0%,100%{box-shadow:0 0 8px rgba(185,35,15,.15);border-color:rgba(185,35,15,.5)}
+  50%{box-shadow:0 0 18px rgba(185,35,15,.35);border-color:rgba(185,35,15,.85)}}
 .rem-cb{display:inline-flex;align-items:center;justify-content:center;
   width:24px;height:24px;flex-shrink:0;border:1.5px solid rgba(160,112,48,.38);
   border-radius:3px;background:white;cursor:pointer;transition:all .15s;position:relative}
@@ -543,11 +563,20 @@ table.jt th.tk:hover .wk-del-btn,.wk-del-btn:focus{color:rgba(160,48,48,.45)}
 .rem-cb.on::after{content:'';position:absolute;width:6px;height:10px;
   border-right:2px solid rgba(255,255,255,.9);border-bottom:2px solid rgba(255,255,255,.9);
   transform:rotate(45deg) translate(-1px,-1px)}
-.rem-name{flex:1;font-size:.95rem}
-.rem-own{font-size:.65rem;color:var(--gold);border:1px solid var(--gold-bd);
-  background:var(--gold-bg);padding:2px 7px;border-radius:2px}
+.rem-name{flex:1;font-size:.95rem;transition:text-decoration .1s}
+.rem-name.text-done{text-decoration:line-through;}
+.rem-own{font-size:.65rem;font-weight:600;border:1px solid;
+  padding:2px 7px;border-radius:2px;white-space:nowrap;
+  /* fallback when no char match */
+  color:var(--gold);border-color:var(--gold-bd);background:var(--gold-bg)}
 .rem-urg-badge{font-size:.65rem;color:#c06020;border:1px solid rgba(160,80,30,.4);
   background:rgba(160,80,30,.08);padding:2px 8px;border-radius:2px;white-space:nowrap}
+.rem-urg-badge.critical{color:#c01808;border-color:rgba(185,35,15,.6);
+  background:rgba(185,35,15,.14);font-weight:700;
+  animation:urgBadgePulse 2s ease-in-out infinite}
+@keyframes urgBadgePulse{
+  0%,100%{background:rgba(185,35,15,.1);color:#b82010}
+  50%{background:rgba(185,35,15,.25);color:#d00808}}
 .btn-del-rem{background:none;border:none;cursor:pointer;color:rgba(160,48,48,.38);
   font-size:.85rem;padding:2px 5px;border-radius:2px;transition:color .12s}
 .btn-del-rem:hover{color:var(--red)}
@@ -1607,6 +1636,12 @@ function togRUrgent(){
   b.textContent=rUrgent?'限时':'普通'; b.classList.toggle('on',rUrgent);
   document.getElementById('r-days-grp').style.display=rUrgent?'flex':'none';
 }
+function remRemDays(r){
+  if(!r.urgent||!r.urgDays) return null;
+  if(!r.createdBjKey) return r.urgDays; // legacy: treat urgDays as remaining
+  const elapsed=Math.round((new Date(bjKey())-new Date(r.createdBjKey))/86400000);
+  return Math.max(0, r.urgDays-elapsed);
+}
 function isRemOn(id){return!!S.rc[id+'_'+bjKey()]}
 function setRemOn(id,v){
   Object.keys(S.rc).forEach(k=>{if(k.startsWith(id+'_'))delete S.rc[k]});
@@ -1620,34 +1655,78 @@ function renderRem(){
     sel.dataset.init='1';
   }
   const list=document.getElementById('rem-list'); list.innerHTML='';
-  const sorted=[...S.rems].sort((a,b)=>(b.urgent?1:0)-(a.urgent?1:0));
-  sorted.forEach(r=>{
-    const on=isRemOn(r.id);
-    const d=document.createElement('div');
-    d.className='rem-card'+(r.urgent?' urg':'');
-    const ch=r.owner?ALL_CH.find(c=>c.n===r.owner):null;
-    const ownerHtml=ch
-      ?`<span class="rem-own"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${ch.col};margin-right:3px;vertical-align:middle"></span><span style="color:${ch.txt}">${esc(ch.n)}</span></span>`
-      :r.owner?`<span class="rem-own">${esc(r.owner)}</span>`:'';
-    d.innerHTML=`
-      <div class="rem-cb${on?' on':''}" onclick="togRem('${r.id}',this)"></div>
-      ${ownerHtml}
-      <span class="rem-name${on?' text-done':''}" style="${on?'text-decoration:line-through;opacity:.5':''}">${esc(r.name)}</span>
-      ${r.urgent?`<span class="rem-urg-badge">⚡ 限时${r.urgDays?r.urgDays+'天内':''}</span>`:''}
-      <button class="btn-del-rem" onclick="delRem('${r.id}')">✕</button>`;
-    list.appendChild(d);
+  // Sort: urgent by remDays asc (null=Infinity), then non-urgent; secondary: owner
+  const sorted=[...S.rems].sort((a,b)=>{
+    const da=a.urgent?(remRemDays(a)??Infinity):(Infinity+1);
+    const db=b.urgent?(remRemDays(b)??Infinity):(Infinity+1);
+    if(da!==db) return da-db;
+    return (a.owner||'').localeCompare(b.owner||'');
   });
+  // Group by owner ('' = 无角色)
+  const groups=[];
+  sorted.forEach(r=>{
+    const key=r.owner||'';
+    const g=groups.find(g=>g.key===key);
+    if(g) g.items.push(r);
+    else groups.push({key,items:[r]});
+  });
+  groups.forEach(g=>{
+    const ch=g.key?ALL_CH.find(c=>c.n===g.key):null;
+    // Group header
+    const hdr=document.createElement('div'); hdr.className='rem-grp-hdr';
+    if(ch){
+      hdr.innerHTML=`<span class="rem-grp-dot" style="background:${ch.col}"></span>
+        <span class="rem-grp-lbl" style="color:${ch.txt}">${esc(ch.n)}</span>
+        <span class="rem-grp-line"></span>`;
+    } else if(g.key){
+      hdr.innerHTML=`<span class="rem-grp-lbl" style="color:var(--ink3)">${esc(g.key)}</span>
+        <span class="rem-grp-line"></span>`;
+    } else {
+      hdr.innerHTML=`<span class="rem-grp-lbl" style="color:var(--ink4)">通用</span>
+        <span class="rem-grp-line"></span>`;
+    }
+    list.appendChild(hdr);
+    g.items.forEach(r=>{
+      const on=isRemOn(r.id);
+      const remDays=remRemDays(r);
+      const isCritical=r.urgent&&remDays!=null&&remDays<=3;
+      const d=document.createElement('div');
+      d.className='rem-card'+(r.urgent?' urg':'')+(isCritical?' urg-critical':'')+(on?' done':'');
+      d.dataset.owner=g.key;
+      d.innerHTML=`
+        <div class="rem-cb${on?' on':''}" onclick="togRem('${r.id}',this)"></div>
+        <span class="rem-name${on?' text-done':''}">${esc(r.name)}</span>
+        ${r.urgent?`<span class="rem-urg-badge${isCritical?' critical':''}">⚡ 限时${remDays!=null?` 还剩${remDays}天`:''}</span>`:''}
+        <button class="btn-del-rem" onclick="delRem('${r.id}')">✕</button>`;
+      list.appendChild(d);
+    });
+  });
+  // highlight cards for jumped owner
+  if(_remJumpOwner){
+    const owner=_remJumpOwner; _remJumpOwner=null;
+    requestAnimationFrame(()=>{
+      const cards=[...list.querySelectorAll(`.rem-card[data-owner="${CSS.escape(owner)}"]`)];
+      cards.forEach(c=>c.classList.add('rem-card-hl'));
+      if(cards[0]) cards[0].scrollIntoView({behavior:'smooth',block:'center'});
+    });
+  }
 }
 function togRem(id,el){
   const v=isRemOn(id); setRemOn(id,!v);
   el.classList.toggle('on',!v);
-  renderRem(); renderPriorityBanner();
+  const card=el.closest('.rem-card');
+  if(card){
+    card.classList.toggle('done',!v);
+    const nm=card.querySelector('.rem-name');
+    if(nm) nm.classList.toggle('text-done',!v);
+  }
+  renderPriorityBanner();
 }
 function addReminder(){
   const n=document.getElementById('r-name').value.trim(); if(!n)return;
   const own=document.getElementById('r-owner').value.trim();
   const urgDays=rUrgent?(parseInt(document.getElementById('r-days').value)||null):null;
-  S.rems.push({id:gid(),name:n,owner:own,urgent:rUrgent,urgDays}); sv();
+  S.rems.push({id:gid(),name:n,owner:own,urgent:rUrgent,urgDays,createdBjKey:rUrgent&&urgDays?bjKey():null}); sv();
   ['r-name','r-days'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
   document.getElementById('r-owner').value='';
   rUrgent=false;
@@ -2133,24 +2212,25 @@ function renderCompleted(){
 // ══════════════════════════════════════════
 // PRIORITY BANNER
 // ══════════════════════════════════════════
+let _remJumpOwner=null;
+function jumpToRemOwner(owner){
+  _remJumpOwner=owner;
+  showTab('remind',document.querySelector('.tab[data-tab="remind"]'));
+}
 function renderPriorityBanner(){
   const banner=document.getElementById('priority-banner');
   if(!banner) return;
   const iconHtml=(ch,size)=>ch&&ch.icon?`<img src="${ch.icon}" style="${ch.iconStyle||'height:'+size+'px;vertical-align:middle;margin-right:2px;flex-shrink:0'}"/>`:'';
-  // Reminders not done today: urgent first, then normal
-  const urgChars=[]; const urgSeen=new Set();
-  const normChars=[]; const normSeen=new Set();
+  // Reminders not done today: count per owner
+  const urgMap={}, normMap={};
   S.rems.forEach(r=>{
     if(!isRemOn(r.id)&&r.owner){
-      if(r.urgent&&!urgSeen.has(r.owner)){
-        urgSeen.add(r.owner);
-        urgChars.push(ALL_CH.find(c=>c.n===r.owner)||{n:r.owner,icon:null});
-      } else if(!r.urgent&&!normSeen.has(r.owner)){
-        normSeen.add(r.owner);
-        normChars.push(ALL_CH.find(c=>c.n===r.owner)||{n:r.owner,icon:null});
-      }
+      if(r.urgent) urgMap[r.owner]=(urgMap[r.owner]||0)+1;
+      else normMap[r.owner]=(normMap[r.owner]||0)+1;
     }
   });
+  const urgChars=Object.entries(urgMap).map(([n,cnt])=>({ch:ALL_CH.find(c=>c.n===n)||{n,icon:null},cnt}));
+  const normChars=Object.entries(normMap).map(([n,cnt])=>({ch:ALL_CH.find(c=>c.n===n)||{n,icon:null},cnt}));
   // Craft chars with pending todos
   const craftChars=[];
   const craftSeen=new Set();
@@ -2164,16 +2244,16 @@ function renderPriorityBanner(){
     banner.innerHTML='<span class="prio-none">今日无待办 ✓</span>'; return;
   }
   let html='<span class="prio-banner-lbl">今日关注</span>';
-  urgChars.forEach(ch=>{
-    html+=`<span class="prio-chip urg">${iconHtml(ch,13)}<span>${esc(ch.n)}</span><span style="font-size:.65rem;margin-left:2px">⚡限时</span></span>`;
+  urgChars.forEach(({ch,cnt})=>{
+    html+=`<span class="prio-chip urg" onclick="jumpToRemOwner('${esc(ch.n)}')">${iconHtml(ch,13)}<span>${esc(ch.n)}</span><span style="font-size:.65rem;margin-left:2px">⚡限时</span>${cnt>1?`<span class="prio-chip-cnt">${cnt}</span>`:''}</span>`;
   });
   if(urgChars.length>0&&(normChars.length>0||craftChars.length>0)) html+='<span class="prio-sep"></span>';
-  normChars.forEach(ch=>{
-    html+=`<span class="prio-chip norm">${iconHtml(ch,13)}<span>${esc(ch.n)}</span><span style="font-size:.65rem;margin-left:2px">提醒</span></span>`;
+  normChars.forEach(({ch,cnt})=>{
+    html+=`<span class="prio-chip norm" onclick="jumpToRemOwner('${esc(ch.n)}')">${iconHtml(ch,13)}<span>${esc(ch.n)}</span><span style="font-size:.65rem;margin-left:2px">提醒</span>${cnt>1?`<span class="prio-chip-cnt">${cnt}</span>`:''}</span>`;
   });
   if(normChars.length>0&&craftChars.length>0) html+='<span class="prio-sep"></span>';
-  craftChars.forEach(ch=>{
-    html+=`<span class="prio-chip craft">${iconHtml(ch,13)}<span>${esc(ch.n)}</span><span style="font-size:.65rem;margin-left:2px">技艺</span></span>`;
+  craftChars.forEach(({ch,cnt})=>{
+    html+=`<span class="prio-chip craft" onclick="jumpToRemOwner('${esc(ch.n)}')">${iconHtml(ch,13)}<span>${esc(ch.n)}</span><span style="font-size:.65rem;margin-left:2px">技艺</span>${cnt>1?`<span class="prio-chip-cnt">${cnt}</span>`:''}</span>`;
   });
   banner.innerHTML=html;
 }
