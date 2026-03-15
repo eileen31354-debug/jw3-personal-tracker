@@ -233,14 +233,19 @@ td.ph{background:rgba(160,112,48,.02)!important}
 
 /* ── Event controls ── */
 .ev-ctrl{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+/* Single-col eg cell: fill full rowspan height, push 全选 to bottom */
+table.jt th.eg.eg-single{vertical-align:top}
+table.jt th.eg.eg-single .ev-ctrl{height:100%}
+table.jt th.eg.eg-single .ev-ctrl-sel{margin-top:auto;width:100%;display:flex;justify-content:center}
 .ev-ctrl-row{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
 .ev-name-inp{background:transparent;border:none;border-bottom:1px solid rgba(160,112,48,.3);
-  color:var(--gold);font-family:'Noto Serif SC',serif;font-size:1rem;font-weight:600;
+  color:var(--gold);font-family:'Noto Serif SC',serif;font-size:1.05rem;font-weight:700;
   outline:none;padding:1px 4px;min-width:80px;max-width:160px}
 .ev-name-inp:focus{border-bottom-color:var(--gold)}
-.ev-date-inp{background:white;border:1px solid var(--gold-bd);border-radius:2px;
-  color:var(--ink2);font-size:.72rem;outline:none;padding:3px 7px;
+.ev-date-inp{background:var(--surf2);border:none;border-bottom:1px solid var(--gold-bd);
+  border-radius:0;color:var(--ink2);font-size:.72rem;outline:none;padding:3px 7px;
   font-family:'Noto Sans SC',sans-serif}
+.ev-date-inp:focus{border-bottom-color:var(--gold)}
 .ev-cd{font-size:.72rem;color:var(--red);white-space:nowrap;font-weight:500}
 .btn-multitask{background:none;border:1px solid var(--gold-bd);border-radius:2px;color:var(--ink3);cursor:pointer;font-size:.7rem;padding:3px 7px;transition:all .13s;white-space:nowrap}
 .btn-multitask.on{border-color:var(--gold2);color:var(--gold);background:var(--gold-bg)}
@@ -841,13 +846,13 @@ function renderEv(){
     const span = ev.tasks.length + (multiTask ? 1 : 0);
     const th = document.createElement('th');
     th.className='eg'; th.colSpan=span;
-    if(isSingle) th.rowSpan=2;
+    if(isSingle){ th.rowSpan=2; th.classList.add('eg-single'); }
     const cdo = cdown(ev.endDate);
     // For single-col: compute full-select state to show inline button
     const singleSelBtn = isSingle ? (()=>{
       const t0=ev.tasks[0];
       const cd=t0.type==='signin'?ACCTS.every(ac=>gec(ev.id,ac.id,t0.id)>=t0.days):ALL_CH.every(ch=>!!gec(ev.id,ch.id,t0.id));
-      return `<div class="ev-ctrl-row" style="justify-content:center;margin-top:1px"><button class="acct-onedone${cd?' clear':''}" style="font-size:.6rem" onclick="colOneDone('${ev.id}','${t0.id}',this)" title="${cd?'清空所有角色进度':'全角色标记完成'}">${cd?'取消全选':'全选'}</button></div>`;
+      return `<div class="ev-ctrl-sel"><button class="acct-onedone${cd?' clear':''}" style="font-size:.6rem" onclick="colOneDone('${ev.id}','${t0.id}',this)" title="${cd?'清空所有角色进度':'全角色标记完成'}">${cd?'取消全选':'全选'}</button></div>`;
     })() : '';
     th.innerHTML=`<div class="ev-ctrl">
       <div class="ev-ctrl-row">
@@ -1819,7 +1824,7 @@ function updateStickyHeader(){
   // Build fixed clone
   const wrap = document.createElement('div');
   wrap.id = 'jt-sticky-hdr';
-  wrap.style.cssText = `position:fixed;top:0;left:${Math.round(tsRect.left)}px;width:${Math.round(tsRect.width)}px;z-index:50;overflow:hidden;pointer-events:none;border-bottom:1px solid rgba(160,112,48,.2);box-shadow:0 2px 6px rgba(0,0,0,.1)`;
+  wrap.style.cssText = `position:fixed;top:0;left:${Math.round(tsRect.left)}px;width:${Math.round(tsRect.width)}px;z-index:50;overflow:hidden;pointer-events:none;border-bottom:1px solid rgba(160,112,48,.22);box-shadow:0 3px 10px rgba(141,115,84,.18),0 1px 3px rgba(0,0,0,.06)`;
   const ct = document.createElement('table');
   ct.className = 'jt';
   ct.style.cssText = `border-collapse:collapse;font-size:15px;background:var(--surf);table-layout:fixed;width:${tbl.offsetWidth}px`;
