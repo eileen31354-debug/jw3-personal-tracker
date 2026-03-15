@@ -465,6 +465,12 @@ table.jt tr.row-done td{background:rgba(46,112,80,.04)!important}
 table.jt tr.row-done td.ch-d{background:rgba(46,112,80,.09)!important}
 table.jt tr.row-done:hover td{background:rgba(46,112,80,.08)!important}
 table.jt tr.row-done:hover td.ch-d{background:rgba(46,112,80,.14)!important}
+/* ── Checked cell tint ── */
+table.jt td.td-done{background:rgba(46,112,80,.07)!important}
+table.jt tr.row-done td.td-done{background:rgba(46,112,80,.12)!important}
+/* ── Button flash feedback ── */
+@keyframes btnFlash{0%{transform:scale(1)}35%{transform:scale(.88);filter:brightness(1.2)}75%{transform:scale(1.05)}100%{transform:scale(1)}}
+.btn-flash{animation:btnFlash .26s ease;pointer-events:none}
 /* ── Progress bar ── */
 .stat-bar-wrap{height:4px;background:rgba(160,112,48,.12);border-radius:2px;margin:4px 0 2px;overflow:hidden;min-width:60px}
 .stat-bar{height:100%;border-radius:2px;transition:width .4s ease;background:var(--gold3)}
@@ -808,10 +814,18 @@ function renderEv(){
 
   evs.forEach(ev=>{
     const multiTask = ev.multiTask !== false;
+    const isSingle = !multiTask && ev.tasks.length === 1;
     const span = ev.tasks.length + (multiTask ? 1 : 0);
     const th = document.createElement('th');
     th.className='eg'; th.colSpan=span;
+    if(isSingle) th.rowSpan=2;
     const cdo = cdown(ev.endDate);
+    // For single-col: compute full-select state to show inline button
+    const singleSelBtn = isSingle ? (()=>{
+      const t0=ev.tasks[0];
+      const cd=t0.type==='signin'?ACCTS.every(ac=>gec(ev.id,ac.id,t0.id)>=t0.days):ALL_CH.every(ch=>!!gec(ev.id,ch.id,t0.id));
+      return `<div class="ev-ctrl-row" style="justify-content:center;margin-top:1px"><button class="acct-onedone${cd?' clear':''}" style="font-size:.6rem" onclick="colOneDone('${ev.id}','${t0.id}',this)" title="${cd?'清空所有角色进度':'全角色标记完成'}">${cd?'取消全选':'全选'}</button></div>`;
+    })() : '';
     th.innerHTML=`<div class="ev-ctrl">
       <div class="ev-ctrl-row">
         <input class="ev-name-inp" value="${esc(ev.name)}" placeholder="活动名称"
@@ -825,6 +839,7 @@ function renderEv(){
         ${cdo?`<span class="ev-cd ${cdownClass(ev.endDate)}">⏱ ${cdo}</span>`:''}
         <button class="btn-icon" onclick="delEv('${ev.id}')" title="删除活动">✕</button>
       </div>
+      ${singleSelBtn}
     </div>`;
     r1.appendChild(th);
   });
@@ -839,6 +854,8 @@ function renderEv(){
   const r2 = thead.insertRow();
   evs.forEach(ev=>{
     const multiTask = ev.multiTask !== false;
+    const isSingle = !multiTask && ev.tasks.length === 1;
+    if(isSingle) return; // rowSpan=2 already set in row 1 — no task header needed
     ev.tasks.forEach(t=>{
       const th = document.createElement('th'); th.className='tk';
       th.innerHTML=`<div class="tk-ctrl">
@@ -851,7 +868,7 @@ function renderEv(){
             onblur="updTkDays('${ev.id}','${t.id}',this.value)" title="签到总天数"/>`:'' }
           <button class="btn-del-tk" onclick="delTk('${ev.id}','${t.id}')" title="删除此列">✕</button>
         </div>
-        ${(()=>{let cd=t.type==='signin'?ACCTS.every(ac=>gec(ev.id,ac.id,t.id)>=t.days):ALL_CH.every(ch=>!!gec(ev.id,ch.id,t.id));return `<button class="acct-onedone${cd?' clear':''}" style="margin-top:2px;font-size:.6rem" onclick="colOneDone('${ev.id}','${t.id}')" title="${cd?'清空所有角色进度':'全角色标记完成'}">${cd?'取消全选':'全选'}</button>`;})()}
+        ${(()=>{let cd=t.type==='signin'?ACCTS.every(ac=>gec(ev.id,ac.id,t.id)>=t.days):ALL_CH.every(ch=>!!gec(ev.id,ch.id,t.id));return `<button class="acct-onedone${cd?' clear':''}" style="margin-top:2px;font-size:.6rem" onclick="colOneDone('${ev.id}','${t.id}',this)" title="${cd?'清空所有角色进度':'全角色标记完成'}">${cd?'取消全选':'全选'}</button>`;})()}
       </div>`;
       r2.appendChild(th);
     });
@@ -878,7 +895,7 @@ function renderEv(){
       if(tk.type==='signin'){ if(gec(ev.id,ac.id,tk.id)<tk.days) acAllDone=false; }
       else { ac.chars.forEach(ch=>{ if(!gec(ev.id,ch.id,tk.id)) acAllDone=false; }); }
     }));
-    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsed?'▶':'▼'}</button><span>${ac.lbl}</span><button class="acct-onedone${acAllDone?' clear':''}" onclick="event.stopPropagation();acctOneDone('${ac.id}')" title="${acAllDone?'一键清空所有任务进度':'全角色日常一键完成'}">${acAllDone?'一键清空':'一键完成'}</button></div>`;
+    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsed?'▶':'▼'}</button><span>${ac.lbl}</span><button class="acct-onedone${acAllDone?' clear':''}" onclick="event.stopPropagation();acctOneDone('${ac.id}',this)" title="${acAllDone?'一键清空所有任务进度':'全角色日常一键完成'}">${acAllDone?'一键清空':'一键完成'}</button></div>`;
 
     ac.chars.forEach((ch, chIdx)=>{
       const row = tbody.insertRow(); row.dataset.acct=ac.id;
@@ -905,6 +922,7 @@ function renderEv(){
             </div>`;
           } else {
             evTot++; if(v) evDn++;
+            if(v) td.classList.add('td-done');
             td.innerHTML=`<div class="cb${v?' on':''}" onclick="togEv('${ev.id}','${ch.id}','${t.id}',this)"></div>`;
           }
         });
@@ -947,17 +965,20 @@ function scInc(eid,cid,tid,max){const v=gec(eid,cid,tid);if(v<max){sec_(eid,cid,
 function scDec(eid,cid,tid,max){const v=gec(eid,cid,tid);if(v>0){sec_(eid,cid,tid,v-1);renderEv()}}
 function togEv(eid,cid,tid,el){
   const v=gec(eid,cid,tid); sec_(eid,cid,tid,v?0:1);
-  el.classList.toggle('on'); recompEvStats();
+  el.classList.toggle('on');
+  el.closest('td')?.classList.toggle('td-done', !v);
+  recompEvStats();
 }
 function delEv(id){
   const ev = S.events.find(e=>e.id===id);
   if(!ev) return;
   S.events = S.events.filter(e=>e.id!==id);
   // Record in completed events
+  const isSingle = ev.multiTask === false && ev.tasks.length <= 1;
   const record = {
     id: gid(),
     name: ev.name,
-    taskNames: ev.tasks.map(t=>t.name),
+    taskNames: isSingle ? [] : ev.tasks.map(t=>t.name),
     deletedAt: new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'})
   };
   S.completedEvents.unshift(record);
@@ -1669,8 +1690,8 @@ function renderCompleted(){
   }
   S.completedEvents.forEach(rec=>{
     const d=document.createElement('div'); d.className='comp-item';
-    const taskStr = rec.taskNames && rec.taskNames.length ? rec.taskNames.join('+') : '';
-    const fullName = taskStr ? `${rec.name}（${taskStr}）` : rec.name;
+    const distinctTasks = rec.taskNames ? rec.taskNames.filter(n=>n && n!==rec.name) : [];
+    const fullName = distinctTasks.length ? `${rec.name}（${distinctTasks.join('+')}）` : rec.name;
     d.innerHTML=`
       <div class="comp-icon">✅</div>
       <div style="flex:1">
@@ -1804,8 +1825,9 @@ function toggleCollapse(aid){
 }
 
 // ── Account one-click complete/clear toggle (events tab only) ──
-function acctOneDone(aid){
+function acctOneDone(aid, btn){
   const ac=ACCTS.find(a=>a.id===aid); if(!ac) return;
+  if(btn){ btn.classList.add('btn-flash'); }
   let allDone=true;
   S.events.forEach(ev=>ev.tasks.forEach(tk=>{
     if(tk.type==='signin'){ if(gec(ev.id,aid,tk.id)<tk.days) allDone=false; }
@@ -1822,13 +1844,14 @@ function acctOneDone(aid){
       else { ac.chars.forEach(ch=>{ if(!gec(ev.id,ch.id,tk.id)) sec_(ev.id,ch.id,tk.id,1); }); }
     }));
   }
-  renderEv();
+  setTimeout(renderEv, 180);
 }
 
 // ── Column one-click complete/clear toggle (events tab) ──
-function colOneDone(eid,tid){
+function colOneDone(eid,tid,btn){
   const ev=S.events.find(e=>e.id===eid); if(!ev) return;
   const tk=ev.tasks.find(t=>t.id===tid); if(!tk) return;
+  if(btn){ btn.classList.add('btn-flash'); }
   let allDone;
   if(tk.type==='signin'){
     allDone=ACCTS.every(ac=>gec(eid,ac.id,tid)>=tk.days);
@@ -1839,7 +1862,7 @@ function colOneDone(eid,tid){
     if(allDone) ALL_CH.forEach(ch=>sec_(eid,ch.id,tid,0));
     else ALL_CH.forEach(ch=>{ if(!gec(eid,ch.id,tid)) sec_(eid,ch.id,tid,1); });
   }
-  renderEv();
+  setTimeout(renderEv, 180);
 }
 
 // ── Stepper direct input ──
