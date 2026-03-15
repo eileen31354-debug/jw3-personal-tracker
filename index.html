@@ -24,6 +24,9 @@
   --jade2:   #5f8d75;           /* 青翠2 */
   --jade-bg: rgba(74,125,99,.09);
   --jade-bd: rgba(74,125,99,.3);
+  --stone:   #4a7a88;           /* 石青 */
+  --stone-bg: rgba(74,122,136,.09);
+  --stone-bd: rgba(74,122,136,.3);
   --ink:     #2c1f0e;
   --ink2:    #6b5030;
   --ink3:    #a08060;
@@ -45,24 +48,39 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min
 ::-webkit-scrollbar-thumb{background:var(--gold-bd);border-radius:3px}
 
 /* ── Header ── */
-.hdr{text-align:center;padding:26px 20px 16px;
+.hdr{display:flex;align-items:center;padding:10px 20px;gap:16px;
   border-bottom:1px solid var(--gold-bd);
   background:linear-gradient(180deg,rgba(160,112,48,.06),transparent)}
-.hdr-ornament{font-size:.68rem;letter-spacing:.7em;color:var(--ink4);margin-bottom:8px}
-.hdr h1{font-family:'ZCOOL XiaoWei',serif;font-size:3.2rem;color:var(--gold);
-  letter-spacing:.22em;line-height:1;
-  text-shadow:1px 2px 0 rgba(160,112,48,.15),0 0 40px rgba(160,112,48,.1)}
-.hdr-sub{font-size:.75rem;color:var(--ink3);letter-spacing:.4em;margin-top:5px}
+.hdr img{order:1;height:44px;border-radius:4px;flex-shrink:0}
+.hdr-ornament{display:none}
+.hdr h1{display:none}
+.hdr-sub{order:2;flex:1;text-align:center;font-size:.72rem;color:var(--ink3);letter-spacing:.4em;margin-top:0}
+#time-box{order:3;flex-shrink:0;text-align:right;position:static!important;transform:none!important;left:auto!important;top:auto!important}
 
 /* ── Stats ── */
-.stats{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
-  padding:12px 16px;border-bottom:1px solid var(--gold-bd)}
-.stat{padding:6px 20px;background:var(--surf);border:1px solid var(--gold-bd);
-  border-radius:3px;text-align:center;min-width:80px;
-  box-shadow:var(--card-sd)}
-.stat-n{font-size:1.4rem;font-weight:700;color:var(--gold);line-height:1;
+.stats{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
+  padding:6px 16px;border-bottom:1px solid var(--gold-bd);background:var(--surf2)}
+.stat{display:flex;align-items:center;gap:8px;padding:5px 12px;
+  background:var(--surf);border:1px solid var(--gold-bd);border-radius:20px;
+  cursor:pointer;transition:box-shadow .15s,transform .1s;box-shadow:var(--card-sd)}
+.stat:hover{box-shadow:0 3px 10px rgba(0,0,0,.1);transform:translateY(-1px)}
+.stat-ev{border-color:rgba(160,112,48,.3)}
+.stat-evp{border-color:rgba(178,69,49,.25)}
+.stat-wp{border-color:rgba(74,122,136,.3)}
+.stat-dp{border-color:rgba(178,69,49,.25)}
+.stat-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.stat-dot.ev{background:var(--gold)}
+.stat-dot.evp{background:var(--red)}
+.stat-dot.wp{background:var(--stone)}
+.stat-dot.dp{background:var(--red)}
+.stat-body{display:flex;flex-direction:column;align-items:flex-start}
+.stat-n{font-size:1.05rem;font-weight:700;line-height:1;
   font-family:'Noto Sans SC',sans-serif;font-variant-numeric:tabular-nums}
-.stat-l{font-size:.65rem;color:var(--ink3);margin-top:2px;letter-spacing:.08em}
+.stat-ev .stat-n{color:var(--gold)}
+.stat-evp .stat-n{color:var(--red)}
+.stat-wp .stat-n{color:var(--stone)}
+.stat-dp .stat-n{color:var(--red)}
+.stat-l{font-size:.58rem;color:var(--ink3);margin-top:1px;letter-spacing:.06em}
 
 /* ── Tabs ── */
 .tabs{display:flex;justify-content:center;border-bottom:2px solid var(--gold-bd);background:var(--surf);overflow-x:auto}
@@ -433,7 +451,7 @@ table.jt th.tk.tk-single{vertical-align:bottom}
 .craft-c4 .craft-icon{background:rgba(140,60,120,.08);border-color:rgba(140,60,120,.3);color:#7a3070}
 .craft-c4 .craft-note{border-color:rgba(140,60,120,.18)}.craft-c4 .craft-note:focus{border-color:#7a3070}
 
-@media(max-width:640px){.hdr h1{font-size:2.4rem}table.jt{font-size:13px}}
+@media(max-width:640px){.hdr img{height:34px}.hdr-sub{font-size:.62rem;letter-spacing:.2em}table.jt{font-size:13px}}
 /* ── Sync modal ── */
 .sync-btn{position:fixed;bottom:20px;right:20px;z-index:200;
   padding:8px 14px;background:var(--gold-bg);border:1px solid var(--gold-bd);
@@ -503,9 +521,12 @@ table.jt tr.row-done td.td-done{background:rgba(46,112,80,.12)!important}
 @keyframes btnFlash{0%{transform:scale(1)}35%{transform:scale(.88);filter:brightness(1.2)}75%{transform:scale(1.05)}100%{transform:scale(1)}}
 .btn-flash{animation:btnFlash .26s ease;pointer-events:none}
 /* ── Progress bar ── */
-.stat-bar-wrap{height:4px;background:rgba(160,112,48,.12);border-radius:2px;margin:4px 0 2px;overflow:hidden;min-width:60px}
+.stat-bar-wrap{height:3px;background:rgba(160,112,48,.12);border-radius:2px;margin:2px 0 1px;overflow:hidden;min-width:52px}
 .stat-bar{height:100%;border-radius:2px;transition:width .4s ease;background:var(--gold3)}
 .stat-bar.jade{background:var(--jade2)}
+.stat-evp .stat-bar{background:var(--red)}
+.stat-wp .stat-bar{background:var(--stone)}
+.stat-dp .stat-bar{background:var(--red)}
 /* ── Stepper direct input ── */
 .sc-n-input{width:48px;height:28px;border:none;border-bottom:1.5px solid var(--gold2);background:transparent;text-align:center;font-size:.9rem;font-weight:600;color:var(--gold);outline:none;font-family:inherit}
 /* ── Countdown urgency ── */
@@ -518,18 +539,18 @@ table.jt tr.row-done td.td-done{background:rgba(46,112,80,.12)!important}
 </head>
 <body>
 
-<div class="hdr" style="position:relative">
-  <div id="time-box" style="position:absolute;left:18px;top:50%;transform:translateY(-50%);text-align:left;font-family:'Noto Sans SC',sans-serif;line-height:2;z-index:5">
-    <div style="font-size:.7rem;color:var(--ink3);display:flex;align-items:center;gap:5px">
+<div class="hdr">
+  <div id="time-box" style="font-family:'Noto Sans SC',sans-serif;line-height:1.8">
+    <div style="font-size:.68rem;color:var(--ink3);display:flex;align-items:center;gap:5px;justify-content:flex-end">
       <span style="color:var(--gold);font-weight:700;letter-spacing:.04em">北京</span>
       <span id="bj-time" style="font-variant-numeric:tabular-nums;color:var(--ink2);font-size:.72rem"></span>
       <span id="bj-day" style="color:var(--gold2);font-size:.65rem;border:1px solid var(--gold-bd);padding:1px 5px;border-radius:2px;background:var(--gold-bg)"></span>
       <span id="bj-date" style="font-variant-numeric:tabular-nums;color:var(--ink3);font-size:.65rem"></span>
     </div>
-    <div style="font-size:.7rem;color:var(--ink3);display:flex;align-items:center;gap:5px">
-      <span style="color:var(--ink3);font-weight:700;letter-spacing:.04em">系统</span>
-      <span id="sys-time" style="font-variant-numeric:tabular-nums;color:var(--ink2);font-size:.72rem"></span>
-      <span id="sys-day" style="color:var(--ink3);font-size:.65rem;border:1px solid rgba(160,112,48,.15);padding:1px 5px;border-radius:2px"></span>
+    <div style="font-size:.68rem;color:var(--ink4);display:flex;align-items:center;gap:5px;justify-content:flex-end">
+      <span style="color:var(--ink4);font-weight:600;letter-spacing:.04em">系统</span>
+      <span id="sys-time" style="font-variant-numeric:tabular-nums;color:var(--ink3);font-size:.68rem"></span>
+      <span id="sys-day" style="color:var(--ink4);font-size:.62rem;border:1px solid rgba(160,112,48,.12);padding:1px 4px;border-radius:2px"></span>
       <span id="sys-date" style="font-variant-numeric:tabular-nums;color:var(--ink3);font-size:.65rem"></span>
     </div>
   </div>
@@ -539,10 +560,22 @@ table.jt tr.row-done td.td-done{background:rgba(46,112,80,.12)!important}
 </div>
 
 <div class="stats">
-  <div class="stat"><div class="stat-n" id="s-ev">—</div><div class="stat-bar-wrap"><div class="stat-bar" id="s-ev-bar" style="width:0%"></div></div><div class="stat-l">活动已完成</div></div>
-  <div class="stat"><div class="stat-n" id="s-evp" style="color:var(--red)">—</div><div class="stat-bar-wrap"><div class="stat-bar" id="s-evp-bar" style="width:0%"></div></div><div class="stat-l">活动完成率</div></div>
-  <div class="stat"><div class="stat-n" id="s-wp" style="color:var(--jade2)">—</div><div class="stat-bar-wrap"><div class="stat-bar jade" id="s-wp-bar" style="width:0%"></div></div><div class="stat-l">周常完成率</div></div>
-  <div class="stat"><div class="stat-n" id="s-dp" style="color:var(--jade2)">—</div><div class="stat-bar-wrap"><div class="stat-bar jade" id="s-dp-bar" style="width:0%"></div></div><div class="stat-l">副本完成率</div></div>
+  <div class="stat stat-ev" onclick="activeTab='event';showTab('event',null);renderTabs()" title="跳转到限时活动">
+    <div class="stat-dot ev"></div>
+    <div class="stat-body"><div class="stat-n" id="s-ev">—</div><div class="stat-bar-wrap"><div class="stat-bar" id="s-ev-bar" style="width:0%"></div></div><div class="stat-l">活动已完成</div></div>
+  </div>
+  <div class="stat stat-evp" onclick="activeTab='event';showTab('event',null);renderTabs()" title="跳转到限时活动">
+    <div class="stat-dot evp"></div>
+    <div class="stat-body"><div class="stat-n" id="s-evp">—</div><div class="stat-bar-wrap"><div class="stat-bar" id="s-evp-bar" style="width:0%"></div></div><div class="stat-l">活动完成率</div></div>
+  </div>
+  <div class="stat stat-wp" onclick="activeTab='weekly';showTab('weekly',null);renderTabs()" title="跳转到周常任务">
+    <div class="stat-dot wp"></div>
+    <div class="stat-body"><div class="stat-n" id="s-wp">—</div><div class="stat-bar-wrap"><div class="stat-bar" id="s-wp-bar" style="width:0%"></div></div><div class="stat-l">周常完成率</div></div>
+  </div>
+  <div class="stat stat-dp" onclick="activeTab='dungeon';showTab('dungeon',null);renderTabs()" title="跳转到副本">
+    <div class="stat-dot dp"></div>
+    <div class="stat-body"><div class="stat-n" id="s-dp">—</div><div class="stat-bar-wrap"><div class="stat-bar" id="s-dp-bar" style="width:0%"></div></div><div class="stat-l">副本完成率</div></div>
+  </div>
 </div>
 
 <div class="prio-banner" id="priority-banner"></div>
