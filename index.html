@@ -6,6 +6,9 @@
 <title>剑网三 · 角色追踪</title>
 <link rel="icon" type="image/png" href="icon.png">
 <link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@300;400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
 <style>
 :root {
   --bg:      #f4ede0;
@@ -68,25 +71,30 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min
   transform:scale(1.1);display:inline-block}
 .hdr-sub-text{font-family:'ZCOOL XiaoWei','Noto Serif SC',serif;font-size:1.15rem;
   font-weight:700;color:var(--ink2);letter-spacing:.3em;white-space:nowrap}
+/* ── time card ── */
 #time-box{order:3;flex-shrink:0;
-  display:flex;flex-direction:column;gap:5px;
   position:static!important;transform:none!important;left:auto!important;top:auto!important}
-.time-row{display:flex;align-items:center;gap:8px;justify-content:flex-end;line-height:1}
-.time-lbl{display:inline-flex;justify-content:center;align-items:center;
-  width:40px;height:18px;flex-shrink:0;
-  font-family:'Noto Sans SC',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.04em}
-.time-lbl-bj{color:var(--gold)}
-.time-lbl-sys{color:var(--ink4)}
-.time-num{font-family:'Courier New','JetBrains Mono',monospace;
-  font-variant-numeric:tabular-nums;font-size:.72rem;line-height:1;color:var(--ink2)}
-.time-num-sys{color:var(--ink3)}
-.time-day{display:inline-flex;justify-content:center;align-items:center;
-  width:42px;height:22px;border-radius:2px;
-  font-family:'Noto Sans SC',sans-serif;font-size:.63rem;flex-shrink:0}
-.time-day-bj{color:var(--gold2);border:1px solid var(--gold-bd);background:var(--gold-bg)}
-.time-day-sys{color:var(--ink4);border:1px solid rgba(160,112,48,.12)}
-.time-date{font-family:'Courier New','JetBrains Mono',monospace;
-  font-variant-numeric:tabular-nums;font-size:.65rem;line-height:1;color:var(--ink3)}
+.time-card{display:flex;flex-direction:row;align-items:stretch;
+  background:rgba(141,115,84,.05);border-radius:8px;
+  border:1px solid rgba(141,115,84,.12);padding:7px 12px;gap:0}
+.tc-divider{width:1px;flex-shrink:0;margin:0 11px;
+  background:linear-gradient(to bottom,
+    transparent 0%,rgba(141,115,84,.18) 18%,rgba(141,115,84,.18) 82%,transparent 100%)}
+.tc-col{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:80px}
+.tc-lbl{display:flex;align-items:center;gap:3px;
+  font-family:'Noto Sans SC',sans-serif;font-size:.62rem;font-weight:800;letter-spacing:.07em}
+.tc-col-bj .tc-lbl{color:var(--gold)}
+.tc-col-sys .tc-lbl{color:var(--ink4)}
+.tc-icon{display:inline-flex;align-items:center;line-height:1;flex-shrink:0}
+.tc-icon svg{display:block;width:13px;height:13px;flex-shrink:0;opacity:.68}
+.tc-time{font-family:'Courier New','JetBrains Mono',monospace;
+  font-variant-numeric:tabular-nums;font-size:.82rem;font-weight:700;line-height:1}
+.tc-col-bj .tc-time{color:var(--ink2)}
+.tc-col-sys .tc-time{color:var(--ink3)}
+.tc-meta{display:flex;align-items:center;gap:3px;
+  font-family:'Noto Sans SC',sans-serif;font-size:.62rem;font-weight:500;
+  color:rgba(141,115,84,.78);line-height:1}
+.tc-sep{opacity:.4}
 
 /* ── Stats ── */
 .stats{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
@@ -344,19 +352,6 @@ td.ph{background:rgba(160,112,48,.02)!important}
 .cb.on::after{content:'';position:absolute;width:6px;height:10px;
   border-right:2px solid rgba(255,255,255,.95);border-bottom:2px solid rgba(255,255,255,.95);
   transform:rotate(45deg) translate(-1px,-1px)}
-/* ── Dungeon shield checkbox ── */
-.cb.cb-dn{border:none;background:none;box-shadow:none;border-radius:0;width:30px;height:30px}
-.cb.cb-dn:hover{border:none;background:none;box-shadow:none}
-.cb.cb-dn.on::after{display:none}
-.cb-dn svg{width:22px;height:22px;display:block;transition:all .18s;overflow:visible}
-.cb-dn svg .sh-body{stroke:rgba(160,112,48,.32);fill:rgba(160,112,48,.05);
-  stroke-width:1.4;transition:all .18s}
-.cb-dn svg .sh-star{fill:rgba(160,112,48,.22);transition:all .18s}
-.cb-dn:hover svg .sh-body{stroke:rgba(160,112,48,.6);fill:rgba(160,112,48,.1)}
-.cb-dn:hover svg .sh-star{fill:rgba(160,112,48,.4)}
-.cb-dn.on svg .sh-body{fill:rgba(148,100,18,.88);stroke:rgba(100,60,5,.75);stroke-width:1.4;
-  filter:drop-shadow(0 1px 2px rgba(100,60,5,.3))}
-.cb-dn.on svg .sh-star{fill:rgba(255,240,180,.9)}
 .sp-num{display:inline-flex;align-items:center;justify-content:center;
   min-width:28px;height:26px;padding:0 6px;border:1.5px solid rgba(160,112,48,.38);
   border-radius:3px;background:white;cursor:pointer;font-size:.85rem;
@@ -428,9 +423,104 @@ table.jt th.tk.tk-single{vertical-align:bottom}
 .ev-name-inp:focus{border-bottom-color:var(--gold)}
 .ev-date-inp{background:var(--surf2);border:none;border-bottom:1px solid var(--gold-bd);
   border-radius:0;color:var(--ink2);font-size:.72rem;outline:none;padding:3px 7px;
-  font-family:'Noto Sans SC',sans-serif}
+  font-family:'Noto Sans SC',sans-serif;cursor:pointer;min-width:82px;caret-color:transparent}
+.ev-date-inp:hover{border-bottom-color:var(--gold2)}
 .ev-date-inp:focus{border-bottom-color:var(--gold)}
-.ev-cd{font-size:.72rem;color:var(--red);white-space:nowrap;font-weight:500}
+.ev-cd{font-size:.72rem;color:var(--red);white-space:nowrap;font-weight:500;display:inline-flex;align-items:center;gap:1px}
+/* quick preset pills */
+.ev-preset-btn{font-size:.6rem;padding:1px 6px;border:1px solid var(--gold-bd);border-radius:10px;
+  background:transparent;color:var(--ink4);cursor:pointer;white-space:nowrap;transition:all .13s;line-height:1.6}
+.ev-preset-btn:hover{background:var(--gold-bg);color:var(--gold);border-color:var(--gold2)}
+/* editable days-left input */
+.ev-days-inp{width:36px;background:transparent;border:none;border-bottom:1px dashed rgba(178,69,49,.5);
+  color:var(--red);font-size:.72rem;font-weight:600;text-align:center;padding:0 2px;
+  font-family:'Noto Sans SC',sans-serif;outline:none;cursor:text}
+.ev-days-inp:focus{border-bottom-color:var(--red)}
+.ev-days-inp::-webkit-inner-spin-button,.ev-days-inp::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+/* ── flatpickr theme ── */
+.flatpickr-calendar{background:var(--surf);border:1px solid rgba(141,115,84,.28);border-radius:10px;
+  box-shadow:0 10px 28px rgba(80,45,5,.16),0 2px 8px rgba(80,45,5,.08);
+  font-family:'Noto Sans SC',sans-serif;overflow:hidden}
+.flatpickr-calendar.arrowTop::before{border-bottom-color:rgba(141,115,84,.28)}
+.flatpickr-calendar.arrowTop::after{border-bottom-color:var(--surf)}
+/* hide entire native flatpickr header — replaced by .fp-hdr */
+.flatpickr-months{display:none!important}
+/* ── custom calendar header ── */
+.fp-hdr{display:flex;align-items:center;height:44px;
+  padding:0 10px;background:rgba(255,252,246,.85);
+  border-bottom:1px solid rgba(141,115,84,.18);flex-shrink:0}
+.fp-hdr-nav{width:30px;height:30px;border:none;background:transparent;
+  border-radius:50%;color:#8D7354;font-size:1.05rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:background .13s,color .13s;margin:0 2px}
+.fp-hdr-nav:hover{background:rgba(141,115,84,.1);color:#5C4B37}
+.fp-hdr-title{flex:1;display:flex;align-items:center;justify-content:center;
+  gap:7px;padding:4px 10px;border-radius:7px;cursor:pointer;
+  transition:background .16s}
+.fp-hdr-title:hover{background:rgba(255,255,255,.8)}
+.fp-hdr-month{font-family:'Noto Sans SC',sans-serif;font-size:.85rem;
+  font-weight:600;color:#5C4B37;letter-spacing:.03em}
+.fp-hdr-sep{color:rgba(141,115,84,.38);font-size:.7rem;font-weight:400;transform:translateY(1px);display:inline-block}
+.fp-hdr-year{font-family:'Noto Sans SC',sans-serif;font-size:.8rem;
+  font-weight:400;color:rgba(141,115,84,.85)}
+/* ── custom month-grid overlay ── */
+.fp-month-grid{position:absolute;inset:0;z-index:20;background:var(--surf);
+  border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.fp-mg-hdr{display:flex;align-items:center;justify-content:space-between;
+  padding:6px 10px;background:rgba(141,115,84,.07);
+  border-bottom:1px solid rgba(141,115,84,.18);flex-shrink:0}
+.fp-mg-year{font-family:'Noto Sans SC',sans-serif;font-weight:700;font-size:.9rem;color:var(--ink2)}
+.fp-mg-nav{background:transparent;border:none;cursor:pointer;
+  color:var(--ink3);font-size:1.1rem;padding:3px 9px;border-radius:50%;
+  transition:background .13s,color .13s;line-height:1}
+.fp-mg-nav:hover{background:var(--gold-bg);color:var(--gold)}
+.fp-mg-list{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px 12px;flex:1}
+.fp-mg-btn{font-family:'Noto Sans SC',sans-serif;font-size:.82rem;font-weight:400;color:var(--ink2);
+  background:rgba(141,115,84,.04);border:1px solid transparent;border-radius:7px;
+  padding:9px 4px;cursor:pointer;text-align:center;transition:all .14s;letter-spacing:.02em}
+.fp-mg-btn:hover{background:var(--gold-bg);color:var(--gold);border-color:var(--gold-bd)}
+.fp-mg-btn.sel{background:var(--gold)!important;color:#fff!important;
+  font-weight:700;border-color:var(--gold)!important}
+/* weekday header: 7-column grid, single char, lighter */
+.flatpickr-weekdays{padding:0!important;margin:0!important}
+.flatpickr-weekdays .flatpickr-weekdaycontainer{
+  display:grid!important;grid-template-columns:repeat(7,1fr)!important;
+  padding:0 8px!important}
+.flatpickr-weekday{color:rgba(141,115,84,.55);font-weight:400;font-size:.65rem;
+  font-family:'Noto Sans SC',sans-serif;text-align:center;max-width:none!important}
+/* force 7-column grid on day container */
+.flatpickr-days .dayContainer{
+  display:grid!important;grid-template-columns:repeat(7,1fr)!important;
+  justify-items:center;align-items:center;
+  max-width:none!important;min-width:0!important;width:100%!important;
+  padding:0 8px}
+/* day cells: circular */
+.flatpickr-day{border-radius:50%;color:var(--ink2);font-family:'Noto Sans SC',sans-serif;
+  transition:background .12s,color .12s;
+  max-width:34px!important;width:34px;height:34px;line-height:1;
+  display:flex!important;align-items:center;justify-content:center;
+  flex-basis:unset!important;margin:2px 0;padding-bottom:2px}
+.flatpickr-day:hover,.flatpickr-day:focus{background:var(--gold-bg);border-color:transparent;color:var(--gold)}
+/* today: light fill + dot below, no border ring */
+.flatpickr-day.today{border:1px solid rgba(141,115,84,.3)!important;background:rgba(160,112,48,.1)!important;
+  font-weight:700;color:var(--gold2);position:relative}
+.flatpickr-day.today::after{content:'';position:absolute;bottom:4px;left:50%;
+  transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--gold2)}
+.flatpickr-day.today:hover{background:rgba(160,112,48,.18)!important}
+/* selected: filled circle */
+.flatpickr-day.selected,.flatpickr-day.selected:hover,.flatpickr-day.selected:focus{
+  background:var(--gold)!important;border-color:transparent!important;
+  color:#fff!important;font-weight:700;box-shadow:none}
+.flatpickr-day.selected.today::after{background:rgba(255,255,255,.7)}
+/* non-current-month: very faint */
+.flatpickr-day.prevMonthDay,.flatpickr-day.nextMonthDay{color:var(--ink4);opacity:.22;pointer-events:none}
+.flatpickr-innerContainer{padding:0 0 8px}
+/* ensure rContainer fills calendar width */
+.flatpickr-rContainer{width:100%}
+.flatpickr-days{width:100%!important}
+.numInputWrapper:hover{background:var(--gold-bg)}
+.numInputWrapper span.arrowUp::after{border-bottom-color:var(--ink3)}
+.numInputWrapper span.arrowDown::after{border-top-color:var(--ink3)}
 .btn-multitask{background:none;border:1px solid var(--gold-bd);border-radius:2px;color:var(--ink3);cursor:pointer;font-size:.7rem;padding:3px 7px;transition:all .13s;white-space:nowrap}
 .btn-multitask.on{border-color:var(--gold2);color:var(--gold);background:var(--gold-bg)}
 .btn-multitask:hover{border-color:var(--gold2);color:var(--gold)}
@@ -724,7 +814,7 @@ table.jt th.tk:hover .wk-del-btn,.wk-del-btn:focus{color:rgba(160,48,48,.45)}
 .craft-c4 .craft-icon{background:rgba(140,60,120,.08);border-color:rgba(140,60,120,.3);color:#7a3070}
 .craft-c4 .craft-note{border-color:rgba(140,60,120,.18)}.craft-c4 .craft-note:focus{border-color:#7a3070}
 
-@media(max-width:640px){.hdr img{height:34px}.hdr-sub-text{font-size:.95rem;letter-spacing:.25em}.time-lbl{width:34px;font-size:.6rem}.time-num,.time-date{font-size:.62rem}.time-day{width:36px;height:19px;font-size:.58rem}table.jt{font-size:13px}}
+@media(max-width:640px){.hdr img{height:34px}.hdr-sub-text{font-size:.95rem;letter-spacing:.25em}.time-card{padding:5px 8px}.tc-divider{margin:0 7px}.tc-col{min-width:66px}.tc-time{font-size:.72rem}.tc-meta{font-size:.56rem}table.jt{font-size:13px}}
 /* ── Sync modal ── */
 .sync-btn{position:fixed;bottom:24px;right:24px;z-index:200;
   padding:7px 13px;background:rgba(250,246,239,.85);border:1px solid var(--gold-bd);
@@ -863,17 +953,18 @@ table.jt tr.row-done td.td-done{background:rgba(46,112,80,.12)!important}
 
 <div class="hdr">
   <div id="time-box">
-    <div class="time-row">
-      <span class="time-lbl time-lbl-bj">北京</span>
-      <span id="bj-time" class="time-num time-num-bj"></span>
-      <span id="bj-day" class="time-day time-day-bj"></span>
-      <span id="bj-date" class="time-date"></span>
-    </div>
-    <div class="time-row">
-      <span class="time-lbl time-lbl-sys">系统</span>
-      <span id="sys-time" class="time-num time-num-sys"></span>
-      <span id="sys-day" class="time-day time-day-sys"></span>
-      <span id="sys-date" class="time-date time-num-sys"></span>
+    <div class="time-card">
+      <div class="tc-col tc-col-bj">
+        <div class="tc-lbl"><span class="tc-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="8"/><line x1="2" y1="10" x2="18" y2="10" stroke-opacity=".45"/><ellipse cx="10" cy="10" rx="3.5" ry="8" stroke-opacity=".45"/><line x1="10" y1="10" x2="7.5" y2="6.5" stroke-width="2"/><line x1="10" y1="10" x2="10" y2="4.5" stroke-width="2"/></svg></span>北京</div>
+        <div id="bj-time" class="tc-time"></div>
+        <div class="tc-meta"><span id="bj-day"></span><span class="tc-sep">&nbsp;·&nbsp;</span><span id="bj-date"></span></div>
+      </div>
+      <div class="tc-divider"></div>
+      <div class="tc-col tc-col-sys">
+        <div class="tc-lbl"><span class="tc-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><rect x="8.8" y="1.5" width="2.4" height="2" rx=".5" fill="currentColor" stroke="none"/><rect x="8.8" y="16.5" width="2.4" height="2" rx=".5" fill="currentColor" stroke="none"/><rect x="1.5" y="8.8" width="2" height="2.4" rx=".5" fill="currentColor" stroke="none"/><rect x="16.5" y="8.8" width="2" height="2.4" rx=".5" fill="currentColor" stroke="none"/><line x1="10" y1="10" x2="10" y2="6" stroke-width="2"/><line x1="10" y1="10" x2="13.5" y2="10" stroke-width="2"/></svg></span>系统</div>
+        <div id="sys-time" class="tc-time"></div>
+        <div class="tc-meta"><span id="sys-day"></span><span class="tc-sep">&nbsp;·&nbsp;</span><span id="sys-date"></span></div>
+      </div>
     </div>
   </div>
   <div class="hdr-ornament">✦ &nbsp;&nbsp; ✦ &nbsp;&nbsp; ✦</div>
@@ -1219,9 +1310,10 @@ function renderEv(){
       </div>
       <div class="ev-ctrl-row">
         <span style="font-size:.68rem;color:var(--ink3)">截止</span>
-        <input class="ev-date-inp" type="date" value="${esc((ev.endDate||'').slice(0,10))}"
-          onchange="updEvDatePart('${ev.id}','date',this.value)"/>
-        ${cdo?`<span class="ev-cd ${cdownClass(ev.endDate)}">⏱ ${cdo}</span>`:''}
+        <input class="ev-date-inp ev-fp" type="text" data-eid="${ev.id}"
+          placeholder="选择日期" value="${esc((ev.endDate||'').slice(0,10))}" readonly />
+        <button class="ev-preset-btn" onclick="event.stopPropagation();evAddDays('${ev.id}',3)">+3天</button>
+        ${(()=>{const dl=daysLeft(ev.endDate);return ev.endDate?(dl!=null?`<span class="ev-cd">剩&thinsp;<input class="ev-days-inp" type="number" min="0" max="999" value="${dl}" title="输入剩余天数自动反推截止日" onchange="evSetDays('${ev.id}',this.value)" onclick="event.stopPropagation()"/>&thinsp;天</span>`:`<span class="ev-cd expired">已截止</span>`):'';})()}
         <button class="btn-icon" onclick="delEv('${ev.id}')" title="删除活动">✕</button>
       </div>
     </div>`;
@@ -1333,6 +1425,7 @@ function renderEv(){
 
   wrap.innerHTML=''; wrap.appendChild(tbl);
   updEvStats(evDn, evTot);
+  requestAnimationFrame(initEvFlatpickr);
 }
 
 function updEvStats(d,t){
@@ -1418,6 +1511,97 @@ function updEvDatePart(eid,part,v){
   if(part==='date') ev.endDate=v?(v+'T'+timePart):'';
   else ev.endDate=datePart?(datePart+'T'+v):'';
   sv(); renderEv();
+}
+function daysLeft(ds){
+  if(!ds) return null;
+  const raw=ds.includes('+')||ds.endsWith('Z')?ds:ds+'+08:00';
+  const df=new Date(raw)-new Date();
+  if(isNaN(df)||df<0) return null;
+  return Math.floor(df/86400000);
+}
+function evAddDays(eid,days){
+  const ev=S.events.find(e=>e.id===eid); if(!ev) return;
+  const base=ev.endDate?new Date(ev.endDate.slice(0,10)+'T07:00+08:00'):new Date();
+  base.setDate(base.getDate()+days);
+  const ds=base.toISOString().slice(0,10);
+  updEvDatePart(eid,'date',ds);
+}
+function evSetDays(eid,daysStr){
+  const days=parseInt(daysStr); if(isNaN(days)||days<0) return;
+  const d=new Date(); d.setDate(d.getDate()+days);
+  const ds=d.toISOString().slice(0,10);
+  updEvDatePart(eid,'date',ds);
+}
+const MONTHS_CN=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const MONTHS_CN_LONG=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+function fpHdrUpdate(fp){
+  const c=fp.calendarContainer;
+  const m=c.querySelector('.fp-hdr-month'); if(m) m.textContent=MONTHS_CN_LONG[fp.currentMonth];
+  const y=c.querySelector('.fp-hdr-year');  if(y) y.textContent=fp.currentYear;
+}
+function fpHdrBuild(fp){
+  const old=fp.calendarContainer.querySelector('.fp-hdr'); if(old) old.remove();
+  const hdr=document.createElement('div'); hdr.className='fp-hdr';
+  hdr.innerHTML=`
+    <button class="fp-hdr-nav fp-hdr-prev">&#8249;</button>
+    <div class="fp-hdr-title">
+      <span class="fp-hdr-month"></span>
+      <span class="fp-hdr-sep">·</span>
+      <span class="fp-hdr-year"></span>
+    </div>
+    <button class="fp-hdr-nav fp-hdr-next">&#8250;</button>`;
+  hdr.querySelector('.fp-hdr-prev').onclick=e=>{e.stopPropagation();fp.changeMonth(-1);fpHdrUpdate(fp);};
+  hdr.querySelector('.fp-hdr-next').onclick=e=>{e.stopPropagation();fp.changeMonth(1);fpHdrUpdate(fp);};
+  hdr.querySelector('.fp-hdr-title').onclick=e=>{e.stopPropagation();buildMonthGrid(fp);};
+  fp.calendarContainer.insertBefore(hdr,fp.calendarContainer.firstChild);
+  fpHdrUpdate(fp);
+}
+function buildMonthGrid(fp){
+  const existing=fp.calendarContainer.querySelector('.fp-month-grid');
+  if(existing){existing.remove();return;}
+  let gridYear=fp.currentYear;
+  const grid=document.createElement('div'); grid.className='fp-month-grid';
+  function render(){
+    grid.innerHTML=`
+      <div class="fp-mg-hdr">
+        <button class="fp-mg-nav fp-mg-prev">&#8249;</button>
+        <span class="fp-mg-year">${gridYear} 年</span>
+        <button class="fp-mg-nav fp-mg-next">&#8250;</button>
+      </div>
+      <div class="fp-mg-list">
+        ${MONTHS_CN.map((m,i)=>`<button class="fp-mg-btn${i===fp.currentMonth&&gridYear===fp.currentYear?' sel':''}" data-m="${i}">${m}</button>`).join('')}
+      </div>`;
+    grid.querySelector('.fp-mg-prev').onclick=e=>{e.stopPropagation();gridYear--;render();};
+    grid.querySelector('.fp-mg-next').onclick=e=>{e.stopPropagation();gridYear++;render();};
+    grid.querySelectorAll('.fp-mg-btn').forEach(btn=>{
+      btn.onclick=e=>{
+        e.stopPropagation();
+        const mi=parseInt(btn.dataset.m);
+        fp.jumpToDate(new Date(gridYear,mi,1));
+        fpHdrUpdate(fp);
+        grid.remove();
+      };
+    });
+  }
+  render();
+  fp.calendarContainer.appendChild(grid);
+}
+function initEvFlatpickr(){
+  if(typeof flatpickr==='undefined') return;
+  const zhBase=flatpickr.l10ns&&flatpickr.l10ns.zh||{};
+  const locale=Object.assign({},zhBase,{
+    weekdays:Object.assign({},zhBase.weekdays,{shorthand:['日','一','二','三','四','五','六']})
+  });
+  document.querySelectorAll('.ev-fp:not([data-fp-init])').forEach(inp=>{
+    inp.setAttribute('data-fp-init','1');
+    const eid=inp.dataset.eid;
+    const fp=flatpickr(inp,{
+      locale,dateFormat:'Y-m-d',disableMobile:true,
+      onReady:(_,__,fp2)=>fpHdrBuild(fp2),
+      onMonthChange:(_,__,fp2)=>fpHdrUpdate(fp2),
+      onChange:(dates,dateStr)=>{ updEvDatePart(eid,'date',dateStr); }
+    });
+  });
 }
 function updTkName(eid,tid,v){const ev=S.events.find(e=>e.id===eid);if(!ev)return;const t=ev.tasks.find(t=>t.id===tid);if(t){t.name=v;sv()}}
 function updTkDays(eid,tid,v){const ev=S.events.find(e=>e.id===eid);if(!ev)return;const t=ev.tasks.find(t=>t.id===tid);if(t){t.days=parseInt(v)||14;sv();renderEv()}}
@@ -2435,7 +2619,7 @@ function renderDungeon(){
       DUNGEON_COLS.forEach(col=>{
         const td=row.insertCell();
         const chk=gdc(ch.id,col.key);
-        td.innerHTML=`<div class="cb cb-dn${chk?' on':''}" onclick="togDc('${ch.id}','${col.key}',this)"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="sh-body" d="M12 2.5L20.5 6.2V12.8C20.5 17.4 16.7 21.1 12 22.2C7.3 21.1 3.5 17.4 3.5 12.8V6.2Z"/><path class="sh-star" d="M12 7.5l.9 2.7h2.8l-2.3 1.7.9 2.7L12 12.9l-2.3 1.7.9-2.7-2.3-1.7h2.8Z"/></svg></div>`;
+        td.innerHTML=`<div class="cb${chk?' on':''}" onclick="togDc('${ch.id}','${col.key}',this)"></div>`;
       });
     });
   });
