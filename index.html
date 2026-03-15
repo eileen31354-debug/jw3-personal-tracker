@@ -997,6 +997,7 @@ table.jt tr.row-done td.td-done{background:rgba(46,112,80,.12)!important}
 <div class="main">
   <div id="tab-event" class="panel active">
     <div class="tscroll" id="ev-wrap"></div>
+    <div id="ev-add-fab" class="sp-add-fab" onclick="addEv()">＋ 添加活动</div>
   </div>
   <div id="tab-weekly" class="panel">
     <div class="sec">
@@ -1307,6 +1308,7 @@ function renderEv(){
         <input class="ev-name-inp" value="${esc(ev.name)}" placeholder="活动名称"
           onblur="updEvName('${ev.id}',this.value)"/>
         <button class="btn-multitask${multiTask?' on':''}" onclick="togEvMultiTask('${ev.id}')" title="切换单/多任务列">${multiTask?'多列':'单列'}</button>
+        <button class="btn-icon" onclick="delEv('${ev.id}')" title="删除活动">✕</button>
       </div>
       <div class="ev-ctrl-row">
         <span style="font-size:.68rem;color:var(--ink3)">截止</span>
@@ -1314,17 +1316,11 @@ function renderEv(){
           placeholder="选择日期" value="${esc((ev.endDate||'').slice(0,10))}" readonly />
         <button class="ev-preset-btn" onclick="event.stopPropagation();evAddDays('${ev.id}',3)">+3天</button>
         ${(()=>{const dl=daysLeft(ev.endDate);return ev.endDate?(dl!=null?`<span class="ev-cd">剩&thinsp;<input class="ev-days-inp" type="number" min="0" max="999" value="${dl}" title="输入剩余天数自动反推截止日" onchange="evSetDays('${ev.id}',this.value)" onclick="event.stopPropagation()"/>&thinsp;天</span>`:`<span class="ev-cd expired">已截止</span>`):'';})()}
-        <button class="btn-icon" onclick="delEv('${ev.id}')" title="删除活动">✕</button>
       </div>
     </div>`;
     r1.appendChild(th);
   });
 
-  // Add-event column (spans 2 rows)
-  const addEvTh = document.createElement('th');
-  addEvTh.rowSpan=2; addEvTh.className='add-ev-col';
-  addEvTh.innerHTML=`<button class="btn-add-ev-vert" onclick="addEv()"><span style="font-size:.9rem">＋</span><span style="font-size:.7rem;letter-spacing:.06em">添加活动</span></button>`;
-  r1.appendChild(addEvTh);
 
   // ── Row 2: task headers ──
   const r2 = thead.insertRow();
@@ -1412,7 +1408,6 @@ function renderEv(){
         });
         if(ev.multiTask!==false) row.insertCell().className='ph'; // spacer
       });
-      row.insertCell().className='ph'; // add-ev spacer
       // Row completion highlight
       const rowDone=evs.every(ev=>ev.tasks.every(tk=>{
         const kid=tk.type==='signin'?ac.id:ch.id;
@@ -1426,6 +1421,8 @@ function renderEv(){
   wrap.innerHTML=''; wrap.appendChild(tbl);
   updEvStats(evDn, evTot);
   requestAnimationFrame(initEvFlatpickr);
+  const evFab=document.getElementById('ev-add-fab');
+  if(evFab) evFab.classList.add('show');
 }
 
 function updEvStats(d,t){
@@ -1484,8 +1481,8 @@ function delEv(id){
   });
 }
 function addEv(){
-  S.events.push({id:gid(),name:'新限时活动',endDate:'',multiTask:true,
-    tasks:[{id:gid(),name:'任务一',type:'check'},{id:gid(),name:'任务二',type:'check'}]});
+  S.events.push({id:gid(),name:'新限时活动',endDate:'',multiTask:false,
+    tasks:[{id:gid(),name:'任务一',type:'check'}]});
   sv(); renderEv();
 }
 function togEvMultiTask(eid){
@@ -2233,6 +2230,7 @@ function showTab(n,b){
   if(n!=='shop'){const fab=document.getElementById('sp-add-fab');if(fab)fab.classList.remove('show');}
   if(n!=='weekly'){const fab=document.getElementById('wk-add-fab');if(fab)fab.classList.remove('show');}
   if(n!=='collect'){const fab=document.getElementById('cl-add-fab');if(fab)fab.classList.remove('show');}
+  if(n!=='event'){const fab=document.getElementById('ev-add-fab');if(fab)fab.classList.remove('show');}
 }
 
 // ══════════════════════════════════════════
