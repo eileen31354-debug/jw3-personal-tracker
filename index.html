@@ -380,13 +380,23 @@ td.ph{background:rgba(160,112,48,.02)!important}
   white-space:nowrap;user-select:none;box-shadow:0 4px 18px rgba(100,70,30,.18);
   opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:500}
 .sp-add-fab.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
-.sp-add-fab:hover{background:rgba(210,160,40,.18);border-color:var(--gold2)}.cl-textarea{width:100%;min-width:120px;max-width:220px;min-height:32px;padding:4px 6px;
+.sp-add-fab:hover{background:rgba(210,160,40,.18);border-color:var(--gold2)}.cl-cell{display:block;width:100%;min-height:30px;padding:4px 7px;border-radius:3px;
+  cursor:text;transition:background .12s;box-sizing:border-box;text-align:left}
+.cl-cell:not(.editing):hover{background:rgba(160,112,48,.07)}
+.cl-cell-text{font-size:.88rem;color:var(--ink);line-height:1.5;
+  white-space:pre-wrap;word-break:break-all;display:block;min-height:1.3em}
+.cl-cell-text:empty::before{content:'—';color:var(--ink4);opacity:.35;font-size:.82rem}
+.cl-textarea{width:100%;min-width:120px;max-width:220px;min-height:32px;padding:4px 6px;
   border:1px solid rgba(160,112,48,.25);border-radius:3px;background:var(--surf);
   color:var(--ink);font-size:.82rem;font-family:inherit;resize:none;overflow:hidden;
   word-break:break-all;white-space:pre-wrap;line-height:1.5;box-sizing:border-box}
 .cl-textarea:focus{outline:none;border-color:var(--gold2)}
-.cl-del-btn{background:none;border:none;cursor:pointer;color:rgba(160,48,48,.4);font-size:.78rem;padding:1px 3px;transition:color .12s}
-.cl-del-btn:hover{color:var(--red)}
+.cl-del-btn{position:absolute;top:3px;right:3px;background:transparent;border:none;
+  cursor:pointer;padding:2px;line-height:1;border-radius:3px;
+  color:transparent;transition:color .15s,background .15s;
+  -webkit-appearance:none;appearance:none}
+.cl-th-wrap:hover .cl-del-btn,.cl-del-btn:focus{color:rgba(160,48,48,.45)}
+.cl-del-btn:hover{color:var(--red)!important;background:rgba(160,48,48,.1)!important}
 
 /* ── Signin widget ── */
 .sc{display:inline-flex;align-items:center;border:1px solid var(--gold-bd);
@@ -986,9 +996,7 @@ table.jt tr.row-done td.td-done{background:rgba(46,112,80,.12)!important}
         <div class="sec-line"></div>
       </div>
       <div class="tscroll" id="cl-wrap"></div>
-      <div class="wk-add-bar">
-        <button class="btn-sec" onclick="clAddCol()">＋ 添加列</button>
-      </div>
+      <div id="cl-add-fab" class="sp-add-fab" onclick="clAddCol()">＋ 添加新列</div>
     </div>
   </div>
   <div id="tab-completed" class="panel">
@@ -2040,6 +2048,7 @@ function showTab(n,b){
   // Hide FABs when leaving their respective tabs
   if(n!=='shop'){const fab=document.getElementById('sp-add-fab');if(fab)fab.classList.remove('show');}
   if(n!=='weekly'){const fab=document.getElementById('wk-add-fab');if(fab)fab.classList.remove('show');}
+  if(n!=='collect'){const fab=document.getElementById('cl-add-fab');if(fab)fab.classList.remove('show');}
 }
 
 // ══════════════════════════════════════════
@@ -2221,12 +2230,57 @@ function clGet(cid,key){ return S.collectData[cid+'__'+key]||''; }
 function clSet(cid,key,v){ S.collectData[cid+'__'+key]=v; sv(); }
 function clDelCol(key){ S.collectCols=clCols().filter(function(c){return c.key!==key;}); sv(); renderCollect(); }
 function clAddCol(){
-  var name=prompt('新列名称：'); if(!name||!name.trim())return;
-  var isText=confirm('点确定 → 文本输入框\n点取消 → 勾选框');
-  var cols=clCols(); cols.push({key:'cl_'+Date.now(), label:name.trim(), type:isText?'text':'cb'});
-  S.collectCols=cols; sv(); renderCollect();
+  var body=document.getElementById('modal-body');
+  _clColType='cb';
+  body.innerHTML=`
+    <h3>添加新列</h3>
+    <div class="modal-field">
+      <label class="modal-label">列名称</label>
+      <input class="modal-inp" id="cl-col-name" placeholder="例：五行石进度、坐骑收集…"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();confirmClAddCol()}"/>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">类型</label>
+      <div class="modal-tog">
+        <button class="tog-btn sel" id="cl-type-cb" onclick="clSelectType('cb')">☑ 勾选</button>
+        <button class="tog-btn" id="cl-type-text" onclick="clSelectType('text')">✏ 文本</button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-ok" onclick="confirmClAddCol()">确认添加</button>
+    </div>`;
+  document.getElementById('modal-bg').style.display='flex';
+  document.getElementById('cl-col-name').focus();
+}
+var _clColType='cb';
+function clSelectType(t){
+  _clColType=t;
+  document.getElementById('cl-type-cb').classList.toggle('sel',t==='cb');
+  document.getElementById('cl-type-text').classList.toggle('sel',t==='text');
+}
+function confirmClAddCol(){
+  var name=(document.getElementById('cl-col-name').value||'').trim();
+  if(!name) return;
+  var cols=clCols(); cols.push({key:'cl_'+Date.now(),label:name,type:_clColType});
+  S.collectCols=cols; sv(); renderCollect(); closeModal();
 }
 function clAutoResize(ta){ ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px'; }
+function clCellEdit(el,cid,key){
+  if(el.classList.contains('editing')) return;
+  el.classList.add('editing');
+  const ta=document.createElement('textarea');
+  ta.className='cl-textarea'; ta.value=clGet(cid,key); ta.rows=1;
+  el.innerHTML=''; el.appendChild(ta);
+  clAutoResize(ta); ta.focus();
+  ta.oninput=function(){clAutoResize(ta);clSet(cid,key,ta.value);};
+  ta.onblur=function(){
+    const v=ta.value; clSet(cid,key,v);
+    el.classList.remove('editing');
+    const span=document.createElement('span'); span.className='cl-cell-text'; span.textContent=v;
+    el.innerHTML=''; el.appendChild(span);
+  };
+}
 function renderCollect(){
   var wrap=document.getElementById('cl-wrap');
   var cols=clCols();
@@ -2235,10 +2289,13 @@ function renderCollect(){
   var hr=tbl.createTHead().insertRow();
   var chH=document.createElement('th'); chH.className='ch-h'; chH.style.minWidth='100px'; chH.textContent='角色'; hr.appendChild(chH);
   cols.forEach(function(col){
-    var th=document.createElement('th'); th.className='dn-th'; th.style.minWidth='130px'; th.style.verticalAlign='top';
-    var lbl=document.createElement('div'); lbl.className='sp-th-lbl'; lbl.style.color='var(--ink2)'; lbl.style.fontSize='.85rem'; lbl.style.fontWeight='600'; lbl.textContent=col.label; th.appendChild(lbl);
-    var del=document.createElement('button'); del.className='cl-del-btn'; del.textContent='✕ 删除';
-    del.onclick=function(){ clDelCol(col.key); }; th.appendChild(del);
+    var th=document.createElement('th'); th.className='dn-th'; th.style.minWidth='130px'; th.style.verticalAlign='middle'; th.style.position='relative';
+    var wrap=document.createElement('div'); wrap.className='cl-th-wrap'; wrap.style.cssText='position:relative;padding-right:16px';
+    var lbl=document.createElement('div'); lbl.className='sp-th-lbl'; lbl.style.color='var(--ink2)'; lbl.style.fontSize='.85rem'; lbl.style.fontWeight='600'; lbl.textContent=col.label; wrap.appendChild(lbl);
+    var del=document.createElement('button'); del.className='cl-del-btn';
+    del.innerHTML='<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,5 13,5"/><path d="M6 5V3h4v2"/><path d="M4 5l1 8h6l1-8"/><line x1="6.5" y1="7.5" x2="6.5" y2="11"/><line x1="9.5" y1="7.5" x2="9.5" y2="11"/></svg>';
+    del.title='删除此列'; del.onclick=function(e){ e.stopPropagation(); clDelCol(col.key); }; wrap.appendChild(del);
+    th.appendChild(wrap);
     hr.appendChild(th);
   });
   // body
@@ -2263,12 +2320,12 @@ function renderCollect(){
         var td=row.insertCell(); td.style.textAlign='center'; td.style.verticalAlign='middle'; td.style.padding='6px';
         var v=clGet(ch.id,col.key);
         if(col.type==='text'){
-          var ta=document.createElement('textarea'); ta.className='cl-textarea'; ta.value=v; ta.rows=1;
-          ta.oninput=function(){ clAutoResize(ta); clSet(ch.id,col.key,ta.value); };
-          ta.onblur=function(){ clSet(ch.id,col.key,ta.value); };
-          // init height after render
-          setTimeout(function(){ clAutoResize(ta); },0);
-          td.appendChild(ta);
+          td.style.textAlign='left';
+          var cell=document.createElement('div'); cell.className='cl-cell';
+          var span=document.createElement('span'); span.className='cl-cell-text'; span.textContent=v;
+          cell.appendChild(span);
+          cell.onclick=(function(c,k){return function(){clCellEdit(cell,c,k);};})(ch.id,col.key);
+          td.appendChild(cell);
         } else {
           var box=document.createElement('div'); box.className='cb'+(v?' on':'');
           box.onclick=function(){ var nv=v?'':1; v=nv; clSet(ch.id,col.key,nv); box.classList.toggle('on'); };
@@ -2278,6 +2335,8 @@ function renderCollect(){
     });
   });
   wrap.innerHTML=''; wrap.appendChild(tbl);
+  const clFab=document.getElementById('cl-add-fab');
+  if(clFab) clFab.classList.add('show');
 }
 
 // ══════════════════════════════════════════
