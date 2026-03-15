@@ -455,9 +455,16 @@ td.ph{background:rgba(160,112,48,.02)!important}
 .acct-row td{cursor:pointer;user-select:none}
 .acct-col-btn{background:none;border:none;cursor:pointer;color:var(--gold2);font-size:.82rem;padding:0 6px;transition:transform .15s;flex-shrink:0}
 .acct-actions{display:flex;align-items:center;gap:8px}
-.acct-onedone{font-size:.65rem;padding:2px 8px;border:1px solid var(--jade-bd);border-radius:2px;background:var(--jade-bg);color:var(--jade2);cursor:pointer;transition:all .13s;white-space:nowrap}
-.acct-onedone:hover{background:rgba(46,112,80,.18)}
+.acct-onedone{font-size:.65rem;padding:2px 8px;border:1px solid var(--jade-bd);border-radius:2px;background:rgba(46,112,80,.14);color:#2a6048;cursor:pointer;transition:all .13s;white-space:nowrap;font-weight:600}
+.acct-onedone:hover{background:rgba(46,112,80,.24)}
+.acct-onedone.clear{border-color:rgba(160,48,48,.35);color:#8a2020;background:rgba(160,48,48,.09)}
+.acct-onedone.clear:hover{background:rgba(160,48,48,.16)}
 .char-row-hidden{display:none}
+/* ── Row completion highlight ── */
+table.jt tr.row-done td{background:rgba(46,112,80,.04)!important}
+table.jt tr.row-done td.ch-d{background:rgba(46,112,80,.09)!important}
+table.jt tr.row-done:hover td{background:rgba(46,112,80,.08)!important}
+table.jt tr.row-done:hover td.ch-d{background:rgba(46,112,80,.14)!important}
 /* ── Progress bar ── */
 .stat-bar-wrap{height:4px;background:rgba(160,112,48,.12);border-radius:2px;margin:4px 0 2px;overflow:hidden;min-width:60px}
 .stat-bar{height:100%;border-radius:2px;transition:width .4s ease;background:var(--gold3)}
@@ -844,7 +851,7 @@ function renderEv(){
             onblur="updTkDays('${ev.id}','${t.id}',this.value)" title="签到总天数"/>`:'' }
           <button class="btn-del-tk" onclick="delTk('${ev.id}','${t.id}')" title="删除此列">✕</button>
         </div>
-        <button class="acct-onedone" style="margin-top:2px;font-size:.6rem" onclick="colOneDone('${ev.id}','${t.id}')" title="全角色标记完成">全选</button>
+        ${(()=>{let cd=t.type==='signin'?ACCTS.every(ac=>gec(ev.id,ac.id,t.id)>=t.days):ALL_CH.every(ch=>!!gec(ev.id,ch.id,t.id));return `<button class="acct-onedone${cd?' clear':''}" style="margin-top:2px;font-size:.6rem" onclick="colOneDone('${ev.id}','${t.id}')" title="${cd?'清空所有角色进度':'全角色标记完成'}">${cd?'取消全选':'全选'}</button>`;})()}
       </div>`;
       r2.appendChild(th);
     });
@@ -866,7 +873,12 @@ function renderEv(){
     ar.onclick=function(e){if(e.target.tagName!=='BUTTON')toggleCollapse(ac.id)};
     const ad = ar.insertCell(); ad.colSpan=totCols;
     const collapsed=S.collapsed.includes(ac.id);
-    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsed?'▶':'▼'}</button><span>${ac.lbl}</span><button class="acct-onedone" onclick="event.stopPropagation();acctOneDone('${ac.id}')" title="全角色日常一键完成">一键完成</button></div>`;
+    let acAllDone=S.events.length>0;
+    S.events.forEach(ev=>ev.tasks.forEach(tk=>{
+      if(tk.type==='signin'){ if(gec(ev.id,ac.id,tk.id)<tk.days) acAllDone=false; }
+      else { ac.chars.forEach(ch=>{ if(!gec(ev.id,ch.id,tk.id)) acAllDone=false; }); }
+    }));
+    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsed?'▶':'▼'}</button><span>${ac.lbl}</span><button class="acct-onedone${acAllDone?' clear':''}" onclick="event.stopPropagation();acctOneDone('${ac.id}')" title="${acAllDone?'一键清空所有任务进度':'全角色日常一键完成'}">${acAllDone?'一键清空':'一键完成'}</button></div>`;
 
     ac.chars.forEach((ch, chIdx)=>{
       const row = tbody.insertRow(); row.dataset.acct=ac.id;
@@ -899,6 +911,13 @@ function renderEv(){
         if(ev.multiTask!==false) row.insertCell().className='ph'; // spacer
       });
       row.insertCell().className='ph'; // add-ev spacer
+      // Row completion highlight
+      const rowDone=evs.every(ev=>ev.tasks.every(tk=>{
+        const kid=tk.type==='signin'?ac.id:ch.id;
+        const v=gec(ev.id,kid,tk.id);
+        return tk.type==='signin'?v>=tk.days:!!v;
+      }));
+      if(rowDone) row.classList.add('row-done');
     });
   });
 
@@ -1784,28 +1803,41 @@ function toggleCollapse(aid){
   if(btn) btn.textContent=S.collapsed.includes(aid)?'▶':'▼';
 }
 
-// ── Account one-click complete (events tab only) ──
+// ── Account one-click complete/clear toggle (events tab only) ──
 function acctOneDone(aid){
   const ac=ACCTS.find(a=>a.id===aid); if(!ac) return;
+  let allDone=true;
   S.events.forEach(ev=>ev.tasks.forEach(tk=>{
-    if(tk.type==='signin'){
-      const v=gec(ev.id,aid,tk.id);
-      if(v<tk.days) sec_(ev.id,aid,tk.id,tk.days);
-    } else {
-      ac.chars.forEach(ch=>{ if(!gec(ev.id,ch.id,tk.id)) sec_(ev.id,ch.id,tk.id,1); });
-    }
+    if(tk.type==='signin'){ if(gec(ev.id,aid,tk.id)<tk.days) allDone=false; }
+    else { ac.chars.forEach(ch=>{ if(!gec(ev.id,ch.id,tk.id)) allDone=false; }); }
   }));
+  if(allDone){
+    S.events.forEach(ev=>ev.tasks.forEach(tk=>{
+      if(tk.type==='signin') sec_(ev.id,aid,tk.id,0);
+      else ac.chars.forEach(ch=>sec_(ev.id,ch.id,tk.id,0));
+    }));
+  } else {
+    S.events.forEach(ev=>ev.tasks.forEach(tk=>{
+      if(tk.type==='signin'){ if(gec(ev.id,aid,tk.id)<tk.days) sec_(ev.id,aid,tk.id,tk.days); }
+      else { ac.chars.forEach(ch=>{ if(!gec(ev.id,ch.id,tk.id)) sec_(ev.id,ch.id,tk.id,1); }); }
+    }));
+  }
   renderEv();
 }
 
-// ── Column one-click complete (events tab) ──
+// ── Column one-click complete/clear toggle (events tab) ──
 function colOneDone(eid,tid){
   const ev=S.events.find(e=>e.id===eid); if(!ev) return;
   const tk=ev.tasks.find(t=>t.id===tid); if(!tk) return;
+  let allDone;
   if(tk.type==='signin'){
-    ACCTS.forEach(ac=>{ if(gec(eid,ac.id,tid)<tk.days) sec_(eid,ac.id,tid,tk.days); });
+    allDone=ACCTS.every(ac=>gec(eid,ac.id,tid)>=tk.days);
+    if(allDone) ACCTS.forEach(ac=>sec_(eid,ac.id,tid,0));
+    else ACCTS.forEach(ac=>{ if(gec(eid,ac.id,tid)<tk.days) sec_(eid,ac.id,tid,tk.days); });
   } else {
-    ALL_CH.forEach(ch=>{ if(!gec(eid,ch.id,tid)) sec_(eid,ch.id,tid,1); });
+    allDone=ALL_CH.every(ch=>!!gec(eid,ch.id,tid));
+    if(allDone) ALL_CH.forEach(ch=>sec_(eid,ch.id,tid,0));
+    else ALL_CH.forEach(ch=>{ if(!gec(eid,ch.id,tid)) sec_(eid,ch.id,tid,1); });
   }
   renderEv();
 }
