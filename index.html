@@ -236,6 +236,11 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min
   100%{box-shadow:none}}
 .prio-chip.urg{background:rgba(160,80,30,.1);border:1px solid rgba(160,80,30,.3);color:#8a3808;
   animation:chipWiggle 7s ease-in-out infinite}
+.prio-chip.urg.crit{background:rgba(185,35,15,.14);border-color:rgba(185,35,15,.6);color:#c01808;
+  animation:chipWiggle 4s ease-in-out infinite,chipCritBorder 2s ease-in-out infinite}
+@keyframes chipCritBorder{
+  0%,100%{box-shadow:0 0 0 1px rgba(185,35,15,.2)}
+  50%{box-shadow:0 0 0 2px rgba(185,35,15,.5)}}
 .prio-chip.urg:nth-child(2){animation-delay:.3s}
 .prio-chip.urg:nth-child(3){animation-delay:.6s}
 @keyframes chipWiggle{
@@ -583,21 +588,63 @@ table.jt th.tk:hover .wk-del-btn,.wk-del-btn:focus{color:rgba(160,48,48,.45)}
 
 /* ── Add reminder form ── */
 .rem-form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;
-  padding:16px;background:var(--surf2);border:1px dashed rgba(160,112,48,.28);border-radius:4px}
+  padding:16px;
+  background:linear-gradient(160deg,#fdfaf5,#f7f2e9);
+  border:1px dashed rgba(160,112,48,.28);border-radius:4px;
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.03),inset 0 1px 0 rgba(255,255,255,.7)}
+/* Uniform control height inside the form */
+.rem-form .fi,
+.rem-form .r-dd-trigger,
+.rem-form .urg-tog,
+.rem-form .btn-add-rem{
+  height:32px;box-sizing:border-box;
+  padding-top:0;padding-bottom:0;
+  display:inline-flex;align-items:center}
+/* ── Custom char dropdown ── */
+.r-dd{position:relative;display:inline-block}
+.r-dd-trigger{display:flex;align-items:center;gap:6px;
+  padding:5px 10px;min-width:96px;height:32px;
+  background:white;border:1px solid rgba(160,112,48,.3);border-radius:3px;
+  cursor:pointer;font-size:.88rem;color:var(--ink2);font-family:'Noto Sans SC',sans-serif;
+  transition:border-color .15s;user-select:none;white-space:nowrap}
+.r-dd-trigger:hover,.r-dd.open .r-dd-trigger{border-color:var(--gold)}
+.r-dd-arrow{margin-left:auto;font-size:.55rem;color:var(--ink4);transition:transform .15s;flex-shrink:0}
+.r-dd.open .r-dd-arrow{transform:rotate(180deg)}
+.r-dd-panel{display:none;position:absolute;top:calc(100% + 3px);left:0;width:100%;box-sizing:border-box;
+  background:rgba(252,248,240,.98);border:1px solid rgba(160,112,48,.3);border-radius:4px;
+  box-shadow:0 6px 18px rgba(80,50,10,.14),0 2px 6px rgba(0,0,0,.07);
+  z-index:500;overflow:hidden;padding:4px 0;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.r-dd.open .r-dd-panel{display:block}
+.r-dd-grp{font-size:.6rem;color:var(--ink4);letter-spacing:.1em;
+  padding:6px 10px 2px;border-top:1px solid rgba(160,112,48,.1);margin-top:2px}
+.r-dd-grp:first-child{border-top:none;margin-top:0}
+.r-dd-opt{display:flex;align-items:center;gap:7px;padding:5px 12px;cursor:pointer;
+  font-size:.88rem;color:var(--ink2);transition:background .1s;white-space:nowrap}
+.r-dd-opt:hover{background:rgba(160,112,48,.08)}
+.r-dd-opt.sel{background:rgba(160,112,48,.1);font-weight:600}
+.r-dd-opt-none{padding:5px 12px;font-size:.85rem;color:var(--ink4);cursor:pointer}
+.r-dd-opt-none:hover{background:rgba(160,112,48,.06)}
 .fg{display:flex;flex-direction:column;gap:4px}
 .fl{font-size:.68rem;color:var(--ink3);letter-spacing:.06em}
 .fi{padding:7px 10px;background:white;border:1px solid var(--gold-bd);
   border-radius:3px;color:var(--ink);font-size:.92rem;outline:none;
   font-family:'Noto Serif SC',serif}
 .fi:focus{border-color:var(--gold)}.fi.sm{width:90px}
+#r-days{text-align:center;padding-left:4px;padding-right:4px}
+#r-days::-webkit-outer-spin-button,#r-days::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+#r-days{-moz-appearance:textfield;appearance:textfield}
 .urg-tog{padding:7px 14px;background:white;border:1px solid var(--gold-bd);
   border-radius:3px;color:var(--ink2);font-size:.9rem;cursor:pointer;
   font-family:'Noto Serif SC',serif;transition:all .15s}
 .urg-tog.on{background:rgba(160,80,30,.08);border-color:rgba(160,80,30,.45);color:#c06020}
 .btn-add-rem{padding:7px 20px;background:var(--gold-bg);border:1px solid var(--gold);
   border-radius:3px;color:var(--gold);font-size:.92rem;cursor:pointer;
-  font-family:'Noto Serif SC',serif;font-weight:600;transition:all .12s}
-.btn-add-rem:hover{background:rgba(160,112,48,.16)}
+  font-family:'Noto Serif SC',serif;font-weight:600;transition:all .18s}
+.btn-add-rem:hover:not(:disabled){background:rgba(160,112,48,.16)}
+.btn-add-rem:disabled{opacity:.38;cursor:not-allowed;filter:grayscale(.3)}
+.btn-add-rem.ok{background:rgba(46,125,82,.12);border-color:rgba(46,125,82,.55);
+  color:#2e7d52;cursor:default}
 
 /* ── Craft ── */
 .craft-list{display:flex;flex-direction:column;gap:12px}
@@ -850,16 +897,27 @@ table.jt tr.row-done td.td-done{background:rgba(46,112,80,.12)!important}
       <div class="rem-list" id="rem-list"></div>
       <div class="rem-form">
         <div class="fg"><span class="fl">角色</span>
-          <select class="fi sm" id="r-owner"></select></div>
+          <div class="r-dd" id="r-owner-dd">
+            <div class="r-dd-trigger" id="r-owner-trigger" onclick="togROwnerDD()">
+              <span id="r-owner-dot" style="display:none;width:8px;height:8px;border-radius:50%;flex-shrink:0"></span>
+              <span id="r-owner-lbl" style="color:var(--ink4)">—</span>
+              <span class="r-dd-arrow">▾</span>
+            </div>
+            <div class="r-dd-panel" id="r-owner-panel"></div>
+          </div></div>
         <div class="fg"><span class="fl">提醒内容</span>
-          <input class="fi" id="r-name" placeholder="提醒内容" style="width:150px"/></div>
+          <input class="fi" id="r-name" placeholder="提醒内容" style="width:150px"
+            oninput="document.getElementById('btn-add-rem').disabled=!this.value.trim()"/></div>
         <div class="fg"><span class="fl">类型</span>
           <button class="urg-tog" id="r-urg-btn" onclick="togRUrgent()">普通</button></div>
         <div class="fg" id="r-days-grp" style="display:none">
           <span class="fl">限时天数</span>
-          <input class="fi sm" id="r-days" type="number" min="1" placeholder="天" style="width:70px"/></div>
+          <div style="display:flex;align-items:center;gap:4px">
+            <input class="fi sm" id="r-days" type="number" min="1" placeholder="数字" style="width:56px"/>
+            <span style="font-size:.82rem;color:rgba(141,115,84,.6);font-family:'Noto Sans SC',sans-serif">天</span>
+          </div></div>
         <div class="fg"><span class="fl">&nbsp;</span>
-          <button class="btn-add-rem" onclick="addReminder()">＋ 添加</button></div>
+          <button class="btn-add-rem" id="btn-add-rem" onclick="addReminder()" disabled>＋ 添加</button></div>
       </div>
     </div>
   </div>
@@ -1630,6 +1688,47 @@ function closeModal(){document.getElementById('modal-bg').style.display='none'}
 // REMINDERS
 // ══════════════════════════════════════════
 let rUrgent=false;
+let rOwner='';
+function togROwnerDD(){
+  const dd=document.getElementById('r-owner-dd'); if(!dd)return;
+  const isOpen=dd.classList.toggle('open');
+  if(isOpen) buildROwnerPanel();
+}
+function buildROwnerPanel(){
+  const panel=document.getElementById('r-owner-panel'); if(!panel)return;
+  panel.innerHTML='';
+  // None option
+  const none=document.createElement('div'); none.className='r-dd-opt-none'+(rOwner===''?' sel':'');
+  none.textContent='— 无角色 —'; none.onclick=()=>selectROwner('',null,null);
+  panel.appendChild(none);
+  ACCTS.forEach(ac=>{
+    const grpLbl=document.createElement('div'); grpLbl.className='r-dd-grp';
+    grpLbl.textContent=ac.lbl; panel.appendChild(grpLbl);
+    ac.chars.forEach(ch=>{
+      const opt=document.createElement('div'); opt.className='r-dd-opt'+(rOwner===ch.n?' sel':'');
+      opt.innerHTML=`<span style="width:8px;height:8px;border-radius:50%;background:${ch.col};flex-shrink:0;display:inline-block"></span><span style="color:${ch.txt}">${esc(ch.n)}</span>`;
+      opt.onclick=()=>selectROwner(ch.n,ch.col,ch.txt);
+      panel.appendChild(opt);
+    });
+  });
+}
+function selectROwner(name,col,txt){
+  rOwner=name;
+  const dot=document.getElementById('r-owner-dot');
+  const lbl=document.getElementById('r-owner-lbl');
+  if(name&&col){
+    dot.style.cssText=`display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0;background:${col}`;
+    lbl.textContent=name; lbl.style.color=txt||'var(--ink2)';
+  } else {
+    dot.style.display='none'; lbl.textContent='—'; lbl.style.color='var(--ink4)';
+  }
+  document.getElementById('r-owner-dd').classList.remove('open');
+}
+// close dropdown on outside click
+document.addEventListener('click',e=>{
+  const dd=document.getElementById('r-owner-dd');
+  if(dd&&!dd.contains(e.target)) dd.classList.remove('open');
+});
 function togRUrgent(){
   rUrgent=!rUrgent;
   const b=document.getElementById('r-urg-btn');
@@ -1648,12 +1747,6 @@ function setRemOn(id,v){
   if(v) S.rc[id+'_'+bjKey()]=true; sv();
 }
 function renderRem(){
-  const sel=document.getElementById('r-owner');
-  if(sel && !sel.dataset.init){
-    sel.innerHTML='<option value="">—</option>'+
-      ACCTS.flatMap(ac=>ac.chars.map(ch=>`<option value="${esc(ch.n)}">${esc(ch.n)}</option>`)).join('');
-    sel.dataset.init='1';
-  }
   const list=document.getElementById('rem-list'); list.innerHTML='';
   // Sort: urgent by remDays asc (null=Infinity), then non-urgent; secondary: owner
   const sorted=[...S.rems].sort((a,b)=>{
@@ -1724,16 +1817,22 @@ function togRem(id,el){
 }
 function addReminder(){
   const n=document.getElementById('r-name').value.trim(); if(!n)return;
-  const own=document.getElementById('r-owner').value.trim();
+  const own=rOwner;
   const urgDays=rUrgent?(parseInt(document.getElementById('r-days').value)||null):null;
   S.rems.push({id:gid(),name:n,owner:own,urgent:rUrgent,urgDays,createdBjKey:rUrgent&&urgDays?bjKey():null}); sv();
   ['r-name','r-days'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
-  document.getElementById('r-owner').value='';
+  selectROwner('',null,null);
   rUrgent=false;
   document.getElementById('r-urg-btn').textContent='普通';
   document.getElementById('r-urg-btn').classList.remove('on');
   document.getElementById('r-days-grp').style.display='none';
   renderRem(); renderPriorityBanner();
+  // success flash
+  const btn=document.getElementById('btn-add-rem');
+  if(btn){
+    btn.disabled=true; btn.classList.add('ok'); btn.textContent='✓ 已添加';
+    setTimeout(()=>{ btn.classList.remove('ok'); btn.textContent='＋ 添加'; },1200);
+  }
 }
 function delRem(id){
   const r=S.rems.find(r=>r.id===id);
@@ -2221,15 +2320,23 @@ function renderPriorityBanner(){
   const banner=document.getElementById('priority-banner');
   if(!banner) return;
   const iconHtml=(ch,size)=>ch&&ch.icon?`<img src="${ch.icon}" style="${ch.iconStyle||'height:'+size+'px;vertical-align:middle;margin-right:2px;flex-shrink:0'}"/>`:'';
-  // Reminders not done today: count per owner
+  // Reminders not done today: count + minDays per owner
   const urgMap={}, normMap={};
   S.rems.forEach(r=>{
     if(!isRemOn(r.id)&&r.owner){
-      if(r.urgent) urgMap[r.owner]=(urgMap[r.owner]||0)+1;
-      else normMap[r.owner]=(normMap[r.owner]||0)+1;
+      if(r.urgent){
+        if(!urgMap[r.owner]) urgMap[r.owner]={cnt:0,minDays:Infinity};
+        urgMap[r.owner].cnt++;
+        const d=remRemDays(r);
+        if(d!=null&&d<urgMap[r.owner].minDays) urgMap[r.owner].minDays=d;
+      } else {
+        normMap[r.owner]=(normMap[r.owner]||0)+1;
+      }
     }
   });
-  const urgChars=Object.entries(urgMap).map(([n,cnt])=>({ch:ALL_CH.find(c=>c.n===n)||{n,icon:null},cnt}));
+  const urgChars=Object.entries(urgMap)
+    .map(([n,{cnt,minDays}])=>({ch:ALL_CH.find(c=>c.n===n)||{n,icon:null},cnt,minDays:minDays===Infinity?null:minDays}))
+    .sort((a,b)=>(a.minDays??Infinity)-(b.minDays??Infinity));
   const normChars=Object.entries(normMap).map(([n,cnt])=>({ch:ALL_CH.find(c=>c.n===n)||{n,icon:null},cnt}));
   // Craft chars with pending todos
   const craftChars=[];
@@ -2244,8 +2351,10 @@ function renderPriorityBanner(){
     banner.innerHTML='<span class="prio-none">今日无待办 ✓</span>'; return;
   }
   let html='<span class="prio-banner-lbl">今日关注</span>';
-  urgChars.forEach(({ch,cnt})=>{
-    html+=`<span class="prio-chip urg" onclick="jumpToRemOwner('${esc(ch.n)}')">${iconHtml(ch,13)}<span>${esc(ch.n)}</span><span style="font-size:.65rem;margin-left:2px">⚡限时</span>${cnt>1?`<span class="prio-chip-cnt">${cnt}</span>`:''}</span>`;
+  urgChars.forEach(({ch,cnt,minDays})=>{
+    const isCrit=minDays!=null&&minDays<=3;
+    const daysTip=minDays!=null?` ${minDays}天`:'';
+    html+=`<span class="prio-chip urg${isCrit?' crit':''}" onclick="jumpToRemOwner('${esc(ch.n)}')">${iconHtml(ch,13)}<span>${esc(ch.n)}</span><span style="font-size:.65rem;margin-left:2px">⚡限时${daysTip}</span>${cnt>1?`<span class="prio-chip-cnt">${cnt}</span>`:''}</span>`;
   });
   if(urgChars.length>0&&(normChars.length>0||craftChars.length>0)) html+='<span class="prio-sep"></span>';
   normChars.forEach(({ch,cnt})=>{
