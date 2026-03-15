@@ -141,14 +141,51 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min
 /* Dungeon col header */
 .dn-th{background:rgba(160,112,48,.05);padding:10px 8px;text-align:center;
   font-size:.85rem;color:var(--ink2);vertical-align:middle;min-width:90px}
+/* Deadline badge */
+.dn-ddl-tag{display:inline-block;font-size:.58rem;padding:1px 5px;border-radius:3px;
+  margin-top:4px;font-weight:600;letter-spacing:.02em;line-height:1.6;white-space:nowrap}
+.dn-ddl-urgent{background:rgba(160,48,48,.1);color:#b03030;border:1px solid rgba(160,48,48,.28)}
+.dn-ddl-warn{background:rgba(180,100,20,.09);color:#9a5510;border:1px solid rgba(180,100,20,.25)}
+.dn-ddl-soon{background:rgba(155,135,30,.09);color:#787010;border:1px solid rgba(155,135,30,.22)}
+.dn-ddl-expired{background:transparent;color:var(--ink4);border:1px solid rgba(120,110,100,.2)}
 /* Dungeon highlight filter */
 .dn-filter-btn{font-size:.78rem;padding:3px 10px;border:1px solid var(--gold-bd);border-radius:3px;background:transparent;color:var(--ink2);cursor:pointer;transition:all .15s}
 .dn-filter-btn:hover,.dn-filter-btn.active{background:rgba(160,112,48,.12);color:var(--gold)}
-.dn-filter-panel{display:none;margin:8px 0 4px;padding:10px 14px;background:var(--surf);border:1px solid var(--gold-bd);border-radius:4px;gap:6px 16px;flex-wrap:wrap}
+.dn-filter-panel{display:none;margin:8px 0 4px;padding:10px 14px;background:var(--surf);border:1px solid var(--gold-bd);border-radius:4px;flex-direction:column;gap:0}
 .dn-filter-panel.open{display:flex}
-.dn-filter-chk{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:.85rem;color:var(--ink2);user-select:none}
+/* quick action row */
+.dn-flt-qrow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+  padding-bottom:7px;border-bottom:1px solid rgba(160,112,48,.14);margin-bottom:8px}
+.dn-flt-q{font-size:.73rem;padding:2px 10px;border:1px solid var(--gold-bd);border-radius:12px;
+  background:transparent;color:var(--ink2);cursor:pointer;transition:all .13s;white-space:nowrap}
+.dn-flt-q:hover{background:rgba(160,112,48,.1);color:var(--gold);border-color:var(--gold)}
+.dn-flt-hide-lbl{display:flex;align-items:center;gap:4px;font-size:.73rem;color:var(--ink3);
+  cursor:pointer;margin-left:auto;user-select:none;white-space:nowrap}
+.dn-flt-hide-lbl input{accent-color:var(--gold);cursor:pointer}
+/* account group */
+.dn-flt-grp{display:flex;flex-direction:column;gap:3px;margin-bottom:6px}
+.dn-flt-grp:last-child{margin-bottom:0}
+.dn-flt-grp-hdr{display:flex;align-items:center;gap:7px}
+.dn-flt-ac-lbl{font-size:.65rem;color:var(--ink4);letter-spacing:.08em;min-width:36px}
+.dn-flt-ac-lbl.all-done{color:rgba(46,125,82,.6)}
+.dn-flt-ac-div{flex:1;height:1px;background:rgba(160,112,48,.14)}
+.dn-flt-ac-tog{font-size:.63rem;padding:1px 7px;border:1px solid rgba(160,112,48,.2);
+  border-radius:2px;background:transparent;color:var(--ink4);cursor:pointer;transition:all .12s;white-space:nowrap}
+.dn-flt-ac-tog:hover{color:var(--gold);border-color:var(--gold-bd)}
+.dn-flt-chars{display:flex;flex-wrap:wrap;gap:5px 14px;padding:2px 0 0 2px}
+.dn-filter-chk{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:.85rem;color:var(--ink2);user-select:none;transition:opacity .2s}
 .dn-filter-chk input{accent-color:var(--gold);width:14px;height:14px;cursor:pointer}
+.dn-filter-chk.fc-done{opacity:.35}
 .dn-row-dim td{opacity:.3}
+/* Dungeon account progress bar */
+.dn-ac-prog{display:flex;align-items:center;gap:7px;margin-left:auto;flex-shrink:0}
+.dn-ac-bar-wrap{width:72px;height:6px;border-radius:3px;background:rgba(160,112,48,.12);overflow:hidden;flex-shrink:0}
+.dn-ac-bar-fill{height:100%;border-radius:3px;transition:width .3s ease;background:linear-gradient(90deg,var(--jade2),var(--jade))}
+.dn-ac-bar-fill.full{background:linear-gradient(90deg,#3a8a60,#2a6e4a)}
+.dn-ac-pct{font-size:.65rem;font-variant-numeric:tabular-nums;font-family:'Noto Sans SC',sans-serif;font-weight:700;min-width:26px;text-align:right;flex-shrink:0}
+.dn-ac-pct.full{color:var(--jade2)}
+.dn-ac-pct.part{color:var(--gold)}
+.dn-ac-pct.none{color:var(--ink4)}
 /* Completed list */
 .comp-item{display:flex;align-items:center;gap:12px;padding:11px 16px;
   background:var(--surf);border:1px solid var(--gold-bd);border-radius:4px;
@@ -267,6 +304,19 @@ td.ph{background:rgba(160,112,48,.02)!important}
 .cb.on::after{content:'';position:absolute;width:6px;height:10px;
   border-right:2px solid rgba(255,255,255,.95);border-bottom:2px solid rgba(255,255,255,.95);
   transform:rotate(45deg) translate(-1px,-1px)}
+/* ── Dungeon shield checkbox ── */
+.cb.cb-dn{border:none;background:none;box-shadow:none;border-radius:0;width:30px;height:30px}
+.cb.cb-dn:hover{border:none;background:none;box-shadow:none}
+.cb.cb-dn.on::after{display:none}
+.cb-dn svg{width:22px;height:22px;display:block;transition:all .18s;overflow:visible}
+.cb-dn svg .sh-body{stroke:rgba(160,112,48,.32);fill:rgba(160,112,48,.05);
+  stroke-width:1.4;transition:all .18s}
+.cb-dn svg .sh-star{fill:rgba(160,112,48,.22);transition:all .18s}
+.cb-dn:hover svg .sh-body{stroke:rgba(160,112,48,.6);fill:rgba(160,112,48,.1)}
+.cb-dn:hover svg .sh-star{fill:rgba(160,112,48,.4)}
+.cb-dn.on svg .sh-body{fill:rgba(148,100,18,.88);stroke:rgba(100,60,5,.75);stroke-width:1.4;
+  filter:drop-shadow(0 1px 2px rgba(100,60,5,.3))}
+.cb-dn.on svg .sh-star{fill:rgba(255,240,180,.9)}
 .sp-num{display:inline-flex;align-items:center;justify-content:center;
   min-width:28px;height:26px;padding:0 6px;border:1.5px solid rgba(160,112,48,.38);
   border-radius:3px;background:white;cursor:pointer;font-size:.85rem;
@@ -902,6 +952,7 @@ function sv(){S._ts=Date.now();try{localStorage.setItem('jw3v5',JSON.stringify(S
 let S = ld() || {events:[DEF_EV], ec:{}, wkTasks:DEF_WK_TASKS, wc:{}, wn:{}, rc:{}, rems:DEF_REMS, cn:{}, ct:{}, dc:{}, completedEvents:[], shopCols:null, shopData:{}, tabOrder:['event','weekly','dungeon','remind','craft','completed','shop']};
 if(!S.dc) S.dc={};
 if(!S.dcHighlight) S.dcHighlight=null; // null = all chars
+if(!S.dcHideDone) S.dcHideDone=false;
 if(!S.completedEvents) S.completedEvents=[];
 if(!S.shopData) S.shopData={};
 if(!S.shopCols) S.shopCols=null;
@@ -1368,24 +1419,76 @@ function togDnFilter(){
   btn.classList.toggle('active',isOpen);
   if(isOpen) renderDnFilterPanel();
 }
+function isChDnDone(chId){ return DUNGEON_COLS.every(col=>gdc(chId,col.key)); }
+function dcFilterQuick(mode){
+  if(mode==='all'||mode==null) S.dcHighlight=null;
+  else if(mode==='main') S.dcHighlight=ALL_CH.filter(c=>c.main).map(c=>c.id);
+  else S.dcHighlight=[];
+  sv(); renderDungeon(); recompDcStats(); renderDnFilterPanel();
+}
+function dcFilterAcToggle(acId){
+  const ac=ACCTS.find(a=>a.id===acId); if(!ac)return;
+  const hl=getDcHL(); const ids=ac.chars.map(c=>c.id);
+  const anyOn=ids.some(id=>hl.has(id));
+  ids.forEach(id=>anyOn?hl.delete(id):hl.add(id));
+  S.dcHighlight=[...hl]; sv(); renderDungeon(); recompDcStats(); renderDnFilterPanel();
+}
 function renderDnFilterPanel(){
   const panel=document.getElementById('dn-filter-panel');
   const hl=getDcHL();
-  panel.innerHTML='<span style="font-size:.75rem;color:var(--ink3);align-self:center;margin-right:4px">计入统计的角色：</span>';
+  panel.innerHTML='';
+  // quick row
+  const qr=document.createElement('div'); qr.className='dn-flt-qrow';
+  ['全选','仅大号','清空'].forEach((lbl,i)=>{
+    const btn=document.createElement('button'); btn.className='dn-flt-q';
+    btn.textContent=lbl;
+    btn.onclick=()=>dcFilterQuick(['all','main','clear'][i]);
+    qr.appendChild(btn);
+  });
+  const hideLbl=document.createElement('label'); hideLbl.className='dn-flt-hide-lbl';
+  const hideCb=document.createElement('input'); hideCb.type='checkbox'; hideCb.checked=S.dcHideDone;
+  hideCb.onchange=()=>{S.dcHideDone=hideCb.checked;sv();renderDnFilterPanel();};
+  const hideTxt=document.createElement('span'); hideTxt.textContent='隐藏已完成';
+  hideLbl.appendChild(hideCb); hideLbl.appendChild(hideTxt);
+  qr.appendChild(hideLbl);
+  panel.appendChild(qr);
+  // account groups
   ACCTS.forEach(ac=>{
-    ac.chars.forEach(ch=>{
-      const lbl=document.createElement('label'); lbl.className='dn-filter-chk';
+    const acAllDone=ac.chars.every(ch=>isChDnDone(ch.id));
+    const visChars=S.dcHideDone?ac.chars.filter(ch=>!isChDnDone(ch.id)):ac.chars;
+    if(!visChars.length) return;
+    const grp=document.createElement('div'); grp.className='dn-flt-grp';
+    // group header
+    const hdr=document.createElement('div'); hdr.className='dn-flt-grp-hdr';
+    const aclbl=document.createElement('span'); aclbl.className='dn-flt-ac-lbl'+(acAllDone?' all-done':'');
+    aclbl.textContent=ac.lbl;
+    const div=document.createElement('span'); div.className='dn-flt-ac-div';
+    const tog=document.createElement('button'); tog.className='dn-flt-ac-tog';
+    const acIds=ac.chars.map(c=>c.id); const anyOn=acIds.some(id=>hl.has(id));
+    tog.textContent=anyOn?'取消全组':'选中全组';
+    tog.onclick=()=>dcFilterAcToggle(ac.id);
+    hdr.appendChild(aclbl); hdr.appendChild(div); hdr.appendChild(tog);
+    grp.appendChild(hdr);
+    // chars
+    const chWrap=document.createElement('div'); chWrap.className='dn-flt-chars';
+    visChars.forEach(ch=>{
+      const done=isChDnDone(ch.id);
+      const lbl=document.createElement('label');
+      lbl.className='dn-filter-chk'+(done?' fc-done':'');
       const inp=document.createElement('input'); inp.type='checkbox'; inp.checked=hl.has(ch.id);
       inp.onchange=function(){
         const cur=getDcHL();
         if(this.checked) cur.add(ch.id); else cur.delete(ch.id);
         S.dcHighlight=[...cur]; sv(); renderDungeon(); recompDcStats();
       };
-      const dot=document.createElement('span'); dot.style.cssText=`display:inline-block;width:8px;height:8px;border-radius:50%;background:${ch.col};flex-shrink:0`;
+      const dot=document.createElement('span');
+      dot.style.cssText=`display:inline-block;width:8px;height:8px;border-radius:50%;background:${ch.col};flex-shrink:0`;
       const nm=document.createElement('span'); nm.textContent=ch.n;
       lbl.appendChild(inp); lbl.appendChild(dot); lbl.appendChild(nm);
-      panel.appendChild(lbl);
+      chWrap.appendChild(lbl);
     });
+    grp.appendChild(chWrap);
+    panel.appendChild(grp);
   });
 }
 function delWkTask(id){
@@ -1879,6 +1982,37 @@ function sdc(cid,key,v){
   if(v) S.dc[cid+'_'+key+'_'+wkKey()]=true;
   sv();
 }
+function getDnDeadlineBadge(key){
+  if(key!=='upper_bow'&&key!=='lower_bow') return '';
+  // Convert local time to Beijing (UTC+8) wall-clock
+  const now=Date.now();
+  const bjNow=now+(8*60+new Date().getTimezoneOffset())*60000;
+  const bj=new Date(bjNow);
+  const day=bj.getUTCDay(); // 0=Sun 1=Mon … 5=Fri 6=Sat
+  const sec=bj.getUTCHours()*3600+bj.getUTCMinutes()*60+bj.getUTCSeconds();
+  const s7=25200; // 07:00 in seconds
+  let daysTo, closed;
+  if(key==='upper_bow'){
+    // window: Mon 07:00 → Fri 07:00
+    closed=(day===5&&sec>=s7)||day===6||day===0;
+    daysTo=(5-day+7)%7;
+  } else {
+    // lower_bow  window: Fri 07:00 → Mon 07:00
+    const notStarted=(day===1&&sec>=s7)||day===2||day===3||day===4||(day===5&&sec<s7);
+    if(notStarted) return '<span class="dn-ddl-tag dn-ddl-expired">未开始</span>';
+    closed=false;
+    daysTo=(1-day+7)%7;
+  }
+  if(closed) return '<span class="dn-ddl-tag dn-ddl-expired">已截止</span>';
+  const dl=new Date(bjNow); dl.setUTCDate(bj.getUTCDate()+daysTo); dl.setUTCHours(7,0,0,0);
+  const ms=dl.getTime()-bjNow; if(ms<=0) return '<span class="dn-ddl-tag dn-ddl-expired">已截止</span>';
+  const h=Math.floor(ms/3600000), m=Math.floor((ms%3600000)/60000);
+  const urgentH=20;
+  if(h<urgentH) return `<span class="dn-ddl-tag dn-ddl-urgent">${h}h${m?m+'m':''} 后截止</span>`;
+  if(h<24) return '<span class="dn-ddl-tag dn-ddl-warn">即将截止</span>';
+  if(h<48) return '<span class="dn-ddl-tag dn-ddl-soon">明日截止</span>';
+  return '';
+}
 function renderDungeon(){
   const wrap = document.getElementById('dn-wrap');
   const tbl = document.createElement('table'); tbl.className='jt';
@@ -1889,7 +2023,7 @@ function renderDungeon(){
   DUNGEON_COLS.forEach(col=>{
     const th = document.createElement('th'); th.className='dn-th';
     th.innerHTML = col.bold
-      ? `<div><strong style="color:var(--ink)">${col.bold}</strong></div><div>${col.rest}</div>`
+      ? `<div><strong style="color:var(--ink)">${col.bold}</strong></div><div>${col.rest}</div><div>${getDnDeadlineBadge(col.key)}</div>`
       : `<div>${col.rest}</div>`;
     hr.appendChild(th);
   });
@@ -1900,7 +2034,19 @@ function renderDungeon(){
     ar.onclick=function(e){if(e.target.tagName!=='BUTTON')toggleCollapse(ac.id)};
     const ad=ar.insertCell(); ad.colSpan=1+DUNGEON_COLS.length;
     const collapsedDn=S.collapsed.includes(ac.id);
-    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsedDn?'▶':'▼'}</button><span>${ac.lbl}</span></div>`;
+    // compute account dungeon progress
+    let acDn=0,acTot=0;
+    ac.chars.forEach(ch=>{ DUNGEON_COLS.forEach(col=>{ acTot++; if(gdc(ch.id,col.key))acDn++; }); });
+    const acPct=acTot?Math.round(acDn/acTot*100):0;
+    const acCls=acDn===acTot&&acTot>0?'full':acDn>0?'part':'none';
+    ad.innerHTML=`<div class="acct-actions">
+      <button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsedDn?'▶':'▼'}</button>
+      <span>${ac.lbl}</span>
+      <div class="dn-ac-prog">
+        <div class="dn-ac-bar-wrap"><div class="dn-ac-bar-fill${acCls==='full'?' full':''}" style="width:${acPct}%"></div></div>
+        <span class="dn-ac-pct ${acCls}">${acPct}%</span>
+      </div>
+    </div>`;
     ac.chars.forEach(ch=>{
       const row=tbody.insertRow(); row.dataset.acct=ac.id;
       if(S.collapsed.includes(ac.id)) row.classList.add('char-row-hidden');
@@ -1914,7 +2060,7 @@ function renderDungeon(){
       DUNGEON_COLS.forEach(col=>{
         const td=row.insertCell();
         const chk=gdc(ch.id,col.key);
-        td.innerHTML=`<div class="cb${chk?' on':''}" onclick="togDc('${ch.id}','${col.key}',this)"></div>`;
+        td.innerHTML=`<div class="cb cb-dn${chk?' on':''}" onclick="togDc('${ch.id}','${col.key}',this)"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="sh-body" d="M12 2.5L20.5 6.2V12.8C20.5 17.4 16.7 21.1 12 22.2C7.3 21.1 3.5 17.4 3.5 12.8V6.2Z"/><path class="sh-star" d="M12 7.5l.9 2.7h2.8l-2.3 1.7.9 2.7L12 12.9l-2.3 1.7.9-2.7-2.3-1.7h2.8Z"/></svg></div>`;
       });
     });
   });
