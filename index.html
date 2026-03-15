@@ -82,15 +82,21 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min
 .dn-filter-chk input{accent-color:var(--gold);width:14px;height:14px;cursor:pointer}
 .dn-row-dim td{opacity:.3}
 /* Completed list */
-.comp-item{display:flex;align-items:center;gap:12px;padding:12px 16px;
+.comp-item{display:flex;align-items:center;gap:12px;padding:11px 16px;
   background:var(--surf);border:1px solid var(--gold-bd);border-radius:4px;
-  opacity:.8}
-.comp-icon{font-size:1.2rem;flex-shrink:0}
-.comp-name{font-size:.95rem;font-weight:600;color:var(--gold)}
-.comp-desc{font-size:.78rem;color:var(--ink3);margin-top:2px}
-.comp-date{font-size:.65rem;color:var(--ink4);white-space:nowrap;margin-left:auto}
-.comp-del-btn{flex-shrink:0;padding:2px 7px;border:1px solid rgba(160,112,48,.2);border-radius:3px;background:transparent;color:var(--ink4);cursor:pointer;font-size:.75rem;transition:all .15s}
-.comp-del-btn:hover{background:rgba(200,60,60,.08);border-color:rgba(200,60,60,.3);color:#c44}
+  opacity:.85;position:relative;transition:opacity .15s,box-shadow .15s}
+.comp-item:hover{opacity:1;box-shadow:0 2px 8px var(--shadow)}
+.comp-item.multi{border-left-width:3px;border-left-color:rgba(160,112,48,.38)}
+.comp-icon{font-size:1.1rem;flex-shrink:0}
+.comp-name{font-size:.92rem;font-weight:600;color:var(--gold);line-height:1.4}
+.comp-tasks{font-size:.82rem;font-weight:400;color:var(--ink3);opacity:.75;margin-left:1px}
+.comp-meta{display:flex;align-items:center;gap:7px;margin-top:3px;flex-wrap:wrap}
+.comp-desc{font-size:.72rem;color:var(--ink4)}
+.comp-char-badge{font-size:.62rem;background:var(--jade-bg);border:1px solid var(--jade-bd);color:var(--jade2);padding:1px 6px;border-radius:8px;white-space:nowrap}
+.comp-date{font-size:.63rem;color:var(--ink4);white-space:nowrap;margin-left:auto;padding-right:6px;letter-spacing:.03em}
+.comp-del-btn{flex-shrink:0;width:22px;height:22px;border:none;border-radius:50%;background:transparent;color:transparent;cursor:pointer;font-size:.78rem;transition:all .15s;line-height:1;padding:0}
+.comp-item:hover .comp-del-btn{color:rgba(160,48,48,.45)}
+.comp-del-btn:hover{background:rgba(200,60,60,.12)!important;color:#c44!important}
 /* Priority banner */
 .prio-banner{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;padding:7px 18px;background:rgba(160,112,48,.04);border-bottom:1px solid var(--gold-bd);min-height:34px}
 .prio-banner-lbl{font-size:.68rem;letter-spacing:.12em;color:var(--ink3);white-space:nowrap;flex-shrink:0}
@@ -975,10 +981,19 @@ function delEv(id){
   S.events = S.events.filter(e=>e.id!==id);
   // Record in completed events
   const isSingle = ev.multiTask === false && ev.tasks.length <= 1;
+  // Count chars with any progress
+  const charCount = ALL_CH.filter(ch=>ev.tasks.some(tk=>{
+    if(tk.type==='signin'){
+      const ac=ACCTS.find(a=>a.chars.some(c=>c.id===ch.id));
+      return ac && gec(ev.id,ac.id,tk.id)>0;
+    }
+    return gec(ev.id,ch.id,tk.id)>0;
+  })).length;
   const record = {
     id: gid(),
     name: ev.name,
     taskNames: isSingle ? [] : ev.tasks.map(t=>t.name),
+    charCount,
     deletedAt: new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'})
   };
   S.completedEvents.unshift(record);
@@ -1689,14 +1704,19 @@ function renderCompleted(){
     return;
   }
   S.completedEvents.forEach(rec=>{
-    const d=document.createElement('div'); d.className='comp-item';
     const distinctTasks = rec.taskNames ? rec.taskNames.filter(n=>n && n!==rec.name) : [];
-    const fullName = distinctTasks.length ? `${rec.name}（${distinctTasks.join('+')}）` : rec.name;
+    const isMulti = distinctTasks.length > 0;
+    const d=document.createElement('div'); d.className='comp-item'+(isMulti?' multi':'');
+    const taskSpan = isMulti ? `<span class="comp-tasks">（${esc(distinctTasks.join('＋'))}）</span>` : '';
+    const charBadge = rec.charCount > 0 ? `<span class="comp-char-badge">共 ${rec.charCount} 名角色</span>` : '';
     d.innerHTML=`
-      <div class="comp-icon">✅</div>
+      <div class="comp-icon">${isMulti?'🎯':'✅'}</div>
       <div style="flex:1">
-        <div class="comp-name">${esc(fullName)}</div>
-        <div class="comp-desc">已完成并归档</div>
+        <div class="comp-name">${esc(rec.name)}${taskSpan}</div>
+        <div class="comp-meta">
+          <span class="comp-desc">已完成并归档</span>
+          ${charBadge}
+        </div>
       </div>
       <div class="comp-date">${esc(rec.deletedAt||'')}</div>
       <button class="comp-del-btn" title="删除此记录">✕</button>`;
