@@ -63,7 +63,7 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min
 .hdr-sub{order:2;flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
   padding:0 12px;margin-top:0}
 .hdr-sub::before,.hdr-sub::after{content:'';display:block;height:1px;flex:1;max-width:52px;
-  background:rgba(74,63,53,.38)}
+  background:rgba(160,112,48,.28)}
 .hdr-gem{font-size:.42rem;color:rgba(160,112,48,.72);line-height:1;flex-shrink:0;
   transform:scale(1.1);display:inline-block}
 .hdr-sub-text{font-family:'ZCOOL XiaoWei','Noto Serif SC',serif;font-size:1.15rem;
@@ -71,9 +71,9 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min
 #time-box{order:3;flex-shrink:0;
   display:flex;flex-direction:column;gap:5px;
   position:static!important;transform:none!important;left:auto!important;top:auto!important}
-.time-row{display:flex;align-items:center;gap:6px;justify-content:flex-end;line-height:1}
+.time-row{display:flex;align-items:center;gap:8px;justify-content:flex-end;line-height:1}
 .time-lbl{display:inline-flex;justify-content:center;align-items:center;
-  width:32px;height:18px;
+  width:40px;height:18px;flex-shrink:0;
   font-family:'Noto Sans SC',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.04em}
 .time-lbl-bj{color:var(--gold)}
 .time-lbl-sys{color:var(--ink4)}
@@ -501,7 +501,7 @@ table.jt th.tk.tk-single{vertical-align:bottom}
 .craft-c4 .craft-icon{background:rgba(140,60,120,.08);border-color:rgba(140,60,120,.3);color:#7a3070}
 .craft-c4 .craft-note{border-color:rgba(140,60,120,.18)}.craft-c4 .craft-note:focus{border-color:#7a3070}
 
-@media(max-width:640px){.hdr img{height:34px}.hdr-sub-text{font-size:.95rem;letter-spacing:.25em}.time-lbl{width:28px;font-size:.6rem}.time-num,.time-date{font-size:.62rem}.time-day{width:36px;height:19px;font-size:.58rem}table.jt{font-size:13px}}
+@media(max-width:640px){.hdr img{height:34px}.hdr-sub-text{font-size:.95rem;letter-spacing:.25em}.time-lbl{width:34px;font-size:.6rem}.time-num,.time-date{font-size:.62rem}.time-day{width:36px;height:19px;font-size:.58rem}table.jt{font-size:13px}}
 /* ── Sync modal ── */
 .sync-btn{position:fixed;bottom:20px;right:20px;z-index:200;
   padding:8px 14px;background:var(--gold-bg);border:1px solid var(--gold-bd);
