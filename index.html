@@ -164,7 +164,7 @@ table.jt th.add-ev-col{
 table.jt th.add-tk-col{
   background:rgba(160,112,48,.02)!important;
   border:1px dashed rgba(160,112,48,.18)!important;
-  border-top:none!important;min-width:36px;text-align:center;vertical-align:middle}
+  border-top:none!important;width:1px;white-space:nowrap;text-align:center;vertical-align:middle}
 /* Account row */
 table.jt tr.acct-row td{
   background:var(--bg2)!important;padding:5px 14px;
@@ -235,8 +235,9 @@ td.ph{background:rgba(160,112,48,.02)!important}
 
 /* ── Event controls ── */
 .ev-ctrl{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
-/* Single-col row-2 cell: centered 全选 button, matching multi-col row-2 height */
-.tk-single-sel{display:flex;align-items:center;justify-content:center;padding:6px 4px}
+/* Single-col row-2 cell: 全选 button pinned to bottom, matching multi-col row-2 */
+table.jt th.tk.tk-single{vertical-align:bottom}
+.tk-single-sel{display:flex;align-items:center;justify-content:center;padding-bottom:12px}
 .ev-ctrl-row{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
 .ev-name-inp{background:transparent;border:none;border-bottom:1px solid rgba(160,112,48,.3);
   color:var(--gold);font-family:'Noto Serif SC',serif;font-size:1.05rem;font-weight:700;
@@ -272,7 +273,7 @@ td.ph{background:rgba(160,112,48,.02)!important}
   font-size:.85rem;padding:1px 3px;transition:color .12s}
 .btn-del-tk:hover{color:var(--red)}
 .btn-add-tk{background:none;border:none;cursor:pointer;color:rgba(160,112,48,.45);
-  font-size:1.4rem;transition:color .15s;width:100%;padding:8px 0;line-height:1}
+  font-size:1.1rem;transition:color .15s;width:28px;padding:6px 4px;line-height:1}
 .btn-add-tk:hover{color:var(--gold)}
 .btn-add-ev-vert{background:none;border:none;cursor:pointer;
   color:rgba(160,112,48,.45);font-size:1.2rem;font-family:'Noto Serif SC',serif;
@@ -879,7 +880,7 @@ function renderEv(){
     const isSingle = !multiTask && ev.tasks.length === 1;
     if(isSingle){
       // Slim tk cell: just the 全选 button, aligned with multi-col row-2 buttons
-      const th = document.createElement('th'); th.className='tk';
+      const th = document.createElement('th'); th.className='tk tk-single';
       const t0=ev.tasks[0];
       const cd=t0.type==='signin'?ACCTS.every(ac=>gec(ev.id,ac.id,t0.id)>=t0.days):ALL_CH.every(ch=>!!gec(ev.id,ch.id,t0.id));
       th.innerHTML=`<div class="tk-single-sel"><button class="acct-onedone${cd?' clear':''}" style="font-size:.6rem" onclick="colOneDone('${ev.id}','${t0.id}',this)" title="${cd?'清空所有角色进度':'全角色标记完成'}">${cd?'取消全选':'全选'}</button></div>`;
