@@ -177,6 +177,12 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min
 .dn-filter-chk input{accent-color:var(--gold);width:14px;height:14px;cursor:pointer}
 .dn-filter-chk.fc-done{opacity:.35}
 .dn-row-dim td{opacity:.3}
+/* Dungeon breathing room */
+#dn-wrap table.jt td{padding:12px 7px}
+#dn-wrap table.jt tr.acct-row td{padding:5px 14px!important;border-top:2px solid rgba(160,112,48,.18)!important}
+#dn-wrap table.jt thead{position:sticky;top:0;z-index:3}
+#dn-wrap table.jt thead th{box-shadow:0 3px 8px rgba(60,35,5,.12),0 1px 0 rgba(160,112,48,.18)}
+
 /* Dungeon account progress bar */
 .dn-ac-prog{display:flex;align-items:center;gap:7px;margin-left:auto;flex-shrink:0}
 .dn-ac-bar-wrap{width:72px;height:6px;border-radius:3px;background:rgba(160,112,48,.12);overflow:hidden;flex-shrink:0}
@@ -208,12 +214,30 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min
   background:rgba(141,115,84,.065);
   border-top:1px solid rgba(160,112,48,.15);
   border-bottom:1px solid var(--gold-bd);min-height:34px}
-.prio-banner-lbl{font-size:.68rem;letter-spacing:.12em;color:var(--ink3);white-space:nowrap;flex-shrink:0}
+.prio-banner-lbl{display:inline-flex;align-items:center;gap:5px;
+  font-size:.68rem;letter-spacing:.12em;color:var(--ink3);white-space:nowrap;flex-shrink:0}
+.prio-banner-lbl::before{
+  content:'';display:inline-block;width:6px;height:6px;border-radius:50%;flex-shrink:0;
+  background:rgba(160,80,30,.75);
+  animation:prioDot 2.2s ease-in-out infinite}
+@keyframes prioDot{
+  0%,100%{opacity:.35;transform:scale(.85);box-shadow:0 0 0 0 rgba(160,80,30,.4)}
+  50%{opacity:1;transform:scale(1.15);box-shadow:0 0 0 3px rgba(160,80,30,.12)}}
 .prio-sep{width:auto;height:auto;background:none;flex-shrink:0;
   color:rgba(160,112,48,.28);font-size:.5rem;line-height:1}
 .prio-sep::before{content:'✦'}
 .prio-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;font-size:.78rem;white-space:nowrap}
-.prio-chip.urg{background:rgba(160,80,30,.1);border:1px solid rgba(160,80,30,.3);color:#8a3808}
+.prio-chip.urg{background:rgba(160,80,30,.1);border:1px solid rgba(160,80,30,.3);color:#8a3808;
+  animation:chipWiggle 7s ease-in-out infinite}
+.prio-chip.urg:nth-child(2){animation-delay:.3s}
+.prio-chip.urg:nth-child(3){animation-delay:.6s}
+@keyframes chipWiggle{
+  0%,78%,100%{transform:translateX(0) rotate(0)}
+  80%{transform:translateX(-3px) rotate(-2deg)}
+  83%{transform:translateX(3px) rotate(2deg)}
+  86%{transform:translateX(-2px) rotate(-1deg)}
+  89%{transform:translateX(2px) rotate(1deg)}
+  92%{transform:translateX(0) rotate(0)}}
 .prio-chip.norm{background:rgba(160,112,48,.08);border:1px solid rgba(160,112,48,.25);color:#7a5010}
 .prio-chip.craft{background:rgba(58,122,200,.07);border:1px solid rgba(58,122,200,.22);color:#2a4a7a}
 .prio-none{font-size:.75rem;color:var(--ink4);letter-spacing:.06em}
