@@ -364,12 +364,23 @@ td.ph{background:rgba(160,112,48,.02)!important}
 .sp-num:hover{border-color:var(--gold2)}
 .sp-num.v1{background:rgba(210,140,30,.12);border-color:rgba(210,140,30,.55);color:#c47a18;font-weight:700}
 .sp-num.v2{background:var(--jade-bg);border-color:var(--jade-bd);color:var(--jade2);font-weight:700}
-.sp-th-lbl{font-size:.85rem;color:var(--ink2);font-weight:400;line-height:1.4;margin-bottom:4px;word-break:keep-all}
+.sp-th-lbl{font-size:.85rem;color:var(--ink2);font-weight:400;line-height:1.4;margin-bottom:4px;word-break:keep-all;cursor:pointer;border-radius:3px;padding:2px 4px;transition:background .12s}
+.sp-th-lbl:hover{background:rgba(160,112,48,.08)}
 .sp-del-btn{font-size:.6rem;padding:1px 4px;border:1px solid rgba(160,112,48,.2);
   border-radius:2px;background:transparent;color:var(--ink3);cursor:pointer;margin-top:3px}
 .sp-del-btn:hover{background:rgba(200,60,60,.08);border-color:rgba(200,60,60,.3);color:#c44}
 .sp-season-rst{font-size:.72rem;padding:2px 10px;margin-left:4px}
-.cl-textarea{width:100%;min-width:120px;max-width:220px;min-height:32px;padding:4px 6px;
+.sp-col-menu{position:fixed;z-index:9999;background:var(--surf);border:1px solid rgba(160,112,48,.25);border-radius:5px;box-shadow:0 4px 18px rgba(0,0,0,.13);min-width:140px;overflow:hidden;animation:fadeIn .1s ease-out}
+.sp-col-menu-item{display:block;width:100%;padding:7px 13px;background:none;border:none;border-bottom:1px solid rgba(160,112,48,.09);text-align:left;font-family:'Noto Serif SC',serif;font-size:.82rem;color:var(--ink2);cursor:pointer;white-space:nowrap;box-sizing:border-box}
+.sp-col-menu-item:last-child{border-bottom:none}
+.sp-col-menu-item:hover{background:rgba(160,112,48,.08);color:var(--ink1)}
+.sp-add-fab{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(14px);
+  padding:9px 24px;background:var(--gold-bg);border:1.5px solid var(--gold-bd);border-radius:20px;
+  font-size:.9rem;font-family:'Noto Serif SC',serif;color:var(--ink2);cursor:pointer;
+  white-space:nowrap;user-select:none;box-shadow:0 4px 18px rgba(100,70,30,.18);
+  opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:500}
+.sp-add-fab.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+.sp-add-fab:hover{background:rgba(210,160,40,.18);border-color:var(--gold2)}.cl-textarea{width:100%;min-width:120px;max-width:220px;min-height:32px;padding:4px 6px;
   border:1px solid rgba(160,112,48,.25);border-radius:3px;background:var(--surf);
   color:var(--ink);font-size:.82rem;font-family:inherit;resize:none;overflow:hidden;
   word-break:break-all;white-space:pre-wrap;line-height:1.5;box-sizing:border-box}
@@ -450,8 +461,8 @@ table.jt th.tk.tk-single{vertical-align:bottom}
 
 /* ── Weekly task header controls ── */
 #wk-wrap table.jt th.tk{
-  padding:6px 8px 8px!important;
-  vertical-align:bottom;overflow:visible;white-space:nowrap}
+  padding:8px 8px!important;
+  vertical-align:middle;overflow:visible;white-space:nowrap}
 .wk-th-ctrl{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
 .wk-th-name{
   white-space:nowrap;
@@ -543,6 +554,10 @@ table.jt th.tk:hover .wk-del-btn,.wk-del-btn:focus{color:rgba(160,48,48,.45)}
   background:rgba(118,76,12,.82);color:#fff8e8;cursor:pointer;font-family:'Noto Serif SC',serif;
   font-size:.9rem;font-weight:600;transition:all .12s}
 .btn-ok:hover{background:rgba(95,60,8,.9)}
+.btn-danger{padding:7px 20px;border:1px solid rgba(180,30,30,.55);border-radius:3px;
+  background:rgba(211,47,47,.82);color:#fff;cursor:pointer;font-family:'Noto Serif SC',serif;
+  font-size:.9rem;font-weight:600;transition:all .12s}
+.btn-danger:hover{background:rgba(185,28,28,.92)}
 
 /* ── Reminders ── */
 .rem-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
@@ -890,6 +905,7 @@ table.jt tr.row-done td.td-done{background:rgba(46,112,80,.12)!important}
         <div class="sec-line"></div>
       </div>
       <div class="tscroll" id="wk-wrap"></div>
+      <div id="wk-add-fab" class="sp-add-fab" onclick="openAddWkModal()">＋ 添加周常列</div>
     </div>
   </div>
   <div id="tab-remind" class="panel">
@@ -960,9 +976,7 @@ table.jt tr.row-done td.td-done{background:rgba(46,112,80,.12)!important}
         <button class="btn-sec sp-season-rst" onclick="spSeasonReset()" title="清空当前赛季两个[点染膏]和当前赛季一个黑色染发膏">🔄 赛季清空</button>
       </div>
       <div class="tscroll" id="sp-wrap"></div>
-      <div class="wk-add-bar">
-        <button class="btn-sec" onclick="spAddCol()">＋ 添加列</button>
-      </div>
+      <div id="sp-add-fab" class="sp-add-fab" onclick="spAddCol()">＋ 添加新列</div>
     </div>
   </div>
   <div id="tab-collect" class="panel">
@@ -1447,9 +1461,6 @@ function renderWk(){
     </div>`;
     hr.appendChild(th);
   });
-  const addTh=document.createElement('th'); addTh.className='tk add-tk-col';
-  addTh.innerHTML=`<button class="btn-add-tk" onclick="openAddWkModal()" title="添加周常任务列">＋</button>`;
-  hr.appendChild(addTh);
 
   const tbody = tbl.createTBody();
   let tot=0, dn=0;
@@ -1458,7 +1469,7 @@ function renderWk(){
   ACCTS.forEach(ac=>{
     const ar=tbody.insertRow(); ar.className='acct-row'; ar.dataset.acid=ac.id;
     ar.onclick=function(e){if(e.target.tagName!=='BUTTON')toggleCollapse(ac.id)};
-    const ad=ar.insertCell(); ad.colSpan=2+tasks.length; // +1 for add-col header
+    const ad=ar.insertCell(); ad.colSpan=1+tasks.length;
     const collapsedWk=S.collapsed.includes(ac.id);
     let acDn=0,acTot=0;
     ac.chars.forEach(ch=>{ tasks.forEach(t=>{ if(t.chars.includes(ch.id)){acTot++;if(gwc(ch.id,t.id))acDn++;} }); });
@@ -1495,12 +1506,13 @@ function renderWk(){
           td.innerHTML=cbH;
         }
       });
-      row.insertCell(); // placeholder for add-col header
     });
   });
 
   wrap.innerHTML=''; wrap.appendChild(tbl);
   wrap.querySelectorAll('textarea.w-note').forEach(ta=>{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px'});
+  const wkFab=document.getElementById('wk-add-fab');
+  if(wkFab) wkFab.classList.add('show');
   const wpPct2=tot?Math.round(dn/tot*100):0;
   document.getElementById('s-wp').textContent = tot?wpPct2+'%':'—';
   document.getElementById('s-wp-bar').style.width=wpPct2+'%';
@@ -1688,6 +1700,19 @@ function confirmAddWk(){
   S.wkTasks.push(pendingWkTask); sv(); closeModal(); renderWk();
 }
 function closeModal(){document.getElementById('modal-bg').style.display='none'}
+function confirmModal(title,msg,onOk,opts){
+  opts=opts||{};
+  const body=document.getElementById('modal-body');
+  body.innerHTML=`
+    <h3>${title}</h3>
+    <div style="font-size:.9rem;color:var(--ink2);line-height:1.85;text-align:center;padding:14px 0 18px">${msg}</div>
+    <div class="modal-foot" style="gap:12px">
+      <button class="btn-cancel" style="flex:1" onclick="closeModal()">取消</button>
+      <button class="${opts.danger?'btn-danger':'btn-ok'}" style="flex:1" id="cm-ok-btn">${opts.okLabel||'确定'}</button>
+    </div>`;
+  document.getElementById('modal-bg').style.display='flex';
+  document.getElementById('cm-ok-btn').onclick=function(){closeModal();onOk();};
+}
 
 // ══════════════════════════════════════════
 // REMINDERS
@@ -2012,6 +2037,9 @@ function showTab(n,b){
   ({event:renderEv, weekly:renderWk, remind:renderRem, craft:renderCraft,
     dungeon:renderDungeon, completed:renderCompleted, shop:renderShop, collect:renderCollect})[n]?.();
   const old=document.getElementById('jt-sticky-hdr'); if(old) old.remove();
+  // Hide FABs when leaving their respective tabs
+  if(n!=='shop'){const fab=document.getElementById('sp-add-fab');if(fab)fab.classList.remove('show');}
+  if(n!=='weekly'){const fab=document.getElementById('wk-add-fab');if(fab)fab.classList.remove('show');}
 }
 
 // ══════════════════════════════════════════
@@ -2035,16 +2063,90 @@ function spTogCb(cid,key,el){ const v=spGet(cid,key); spSet(cid,key,v?0:1); el.c
 function spCycNum(cid,key,el){ const v=(spGet(cid,key)+1)%3; spSet(cid,key,v); el.textContent=v?String(v):'—'; el.className='sp-num'+(v===1?' v1':v===2?' v2':''); }
 function spDelCol(key){ S.shopCols=spCols().filter(c=>c.key!==key); sv(); renderShop(); }
 function spSeasonReset(){
-  if(!confirm('清空所有角色的「当前赛季两个[点染膏]」和「当前赛季一个黑色染发膏]」数据？')) return;
-  const seasonKeys=['dye2','dye_blk'];
-  ALL_CH.forEach(function(c){ seasonKeys.forEach(function(k){ delete S.shopData[c.id+'__'+k]; }); });
+  confirmModal(
+    '⚠️ 赛季清空确认',
+    '将清空所有角色的<br>「当前赛季两个[点染膏]」和「当前赛季一个黑色染发膏」数据',
+    function(){
+      const seasonKeys=['dye2','dye_blk'];
+      ALL_CH.forEach(function(c){ seasonKeys.forEach(function(k){ delete S.shopData[c.id+'__'+k]; }); });
+      sv(); renderShop();
+    },
+    {danger:true, okLabel:'确认清空'}
+  );
+}
+let _spColType='cb';
+function spAddCol(){
+  _spColType='cb';
+  const body=document.getElementById('modal-body');
+  body.innerHTML=`
+    <h3>添加新列</h3>
+    <div class="modal-field">
+      <label class="modal-label">列名称</label>
+      <input class="modal-inp" id="sp-col-name" placeholder="例：称号[侠客]、挂件…"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();confirmSpAddCol()}"/>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">类型</label>
+      <div class="modal-tog">
+        <button class="tog-btn sel" id="sp-type-cb" onclick="spSelectType('cb')">☑ 勾选</button>
+        <button class="tog-btn" id="sp-type-num" onclick="spSelectType('num')">① 数字</button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-ok" onclick="confirmSpAddCol()">确认添加</button>
+    </div>`;
+  document.getElementById('modal-bg').style.display='flex';
+  document.getElementById('sp-col-name').focus();
+}
+function spSelectType(t){
+  _spColType=t;
+  document.getElementById('sp-type-cb').classList.toggle('sel',t==='cb');
+  document.getElementById('sp-type-num').classList.toggle('sel',t==='num');
+}
+function confirmSpAddCol(){
+  const name=(document.getElementById('sp-col-name').value||'').trim();
+  if(!name) return;
+  const cols=spCols(); cols.push({key:'sp_'+Date.now(),label:name,type:_spColType});
+  S.shopCols=cols; sv(); renderShop(); closeModal();
+}
+let _spMenuKey=null;
+function spFillCol(key,val,mainOnly){
+  ALL_CH.forEach(function(ch){
+    if(mainOnly&&!ch.main) return;
+    if(val===0) delete S.shopData[ch.id+'__'+key];
+    else S.shopData[ch.id+'__'+key]=val;
+  });
   sv(); renderShop();
 }
-function spAddCol(){
-  const name=prompt('新列名称：'); if(!name||!name.trim())return;
-  const isNum=confirm('点确定 → 数字类型(1/2)\n点取消 → 勾选类型');
-  const cols=spCols(); cols.push({key:'sp_'+Date.now(), label:name.trim(), type:isNum?'num':'cb'});
-  S.shopCols=cols; sv(); renderShop();
+function spShowColMenu(key,type,el){
+  const existing=document.getElementById('sp-col-menu');
+  if(existing&&_spMenuKey===key){existing.remove();_spMenuKey=null;return;}
+  if(existing) existing.remove();
+  _spMenuKey=key;
+  const menu=document.createElement('div'); menu.id='sp-col-menu'; menu.className='sp-col-menu';
+  const items=type==='num'
+    ?[{t:'① 全部标记为一',fn:function(){spFillCol(key,1,false);}},
+      {t:'② 全部标记为二',fn:function(){spFillCol(key,2,false);}},
+      {t:'★ 仅大号标记为一',fn:function(){spFillCol(key,1,true);}},
+      {t:'— 全部清空',fn:function(){spFillCol(key,0,false);}}]
+    :[{t:'✓ 全选该列',fn:function(){spFillCol(key,1,false);}},
+      {t:'★ 仅大号全选',fn:function(){spFillCol(key,1,true);}},
+      {t:'✕ 全部取消',fn:function(){spFillCol(key,0,false);}}];
+  items.forEach(function(item){
+    const btn=document.createElement('button'); btn.className='sp-col-menu-item'; btn.textContent=item.t;
+    btn.onclick=function(e){e.stopPropagation();item.fn();menu.remove();_spMenuKey=null;};
+    menu.appendChild(btn);
+  });
+  document.body.appendChild(menu);
+  const r=el.getBoundingClientRect();
+  menu.style.top=(r.bottom+4)+'px';
+  menu.style.left=Math.max(4,Math.min(r.left,window.innerWidth-150))+'px';
+  setTimeout(function(){
+    document.addEventListener('click',function closeSpMenu(e){
+      if(!menu.contains(e.target)){menu.remove();_spMenuKey=null;document.removeEventListener('click',closeSpMenu);}
+    });
+  },0);
 }
 function renderShop(){
   const wrap=document.getElementById('sp-wrap');
@@ -2056,7 +2158,10 @@ function renderShop(){
   cols.forEach(function(col){
     const th=document.createElement('th'); th.className='dn-th'; th.style.minWidth='88px'; th.style.verticalAlign='top';
     // label
-    const lbl=document.createElement('div'); lbl.className='sp-th-lbl'; lbl.style.color='var(--ink2)'; lbl.style.fontSize='.85rem'; lbl.style.fontWeight='600'; lbl.textContent=col.label; th.appendChild(lbl);
+    const lbl=document.createElement('div'); lbl.className='sp-th-lbl'; lbl.style.color='var(--ink2)'; lbl.style.fontSize='.85rem'; lbl.style.fontWeight='600';
+    const lblTxt=document.createElement('span'); lblTxt.textContent=col.label; lbl.appendChild(lblTxt);
+    const arr=document.createElement('span'); arr.style.cssText='font-size:.5rem;opacity:.3;margin-left:3px;vertical-align:middle'; arr.textContent='▾'; lbl.appendChild(arr);
+    lbl.title='点击快捷操作'; lbl.onclick=function(e){e.stopPropagation();spShowColMenu(col.key,col.type,lbl);}; th.appendChild(lbl);
     // del button (only for user-added columns)
     if(col.key.startsWith('sp_')){
       const delBtn=document.createElement('button'); delBtn.className='sp-del-btn'; delBtn.textContent='✕ 删除';
@@ -2099,6 +2204,9 @@ function renderShop(){
     });
   });
   wrap.innerHTML=''; wrap.appendChild(tbl);
+  // Show FAB whenever shop tab is rendered
+  const fab=document.getElementById('sp-add-fab');
+  if(fab) fab.classList.add('show');
 }
 
 // ══════════════════════════════════════════
