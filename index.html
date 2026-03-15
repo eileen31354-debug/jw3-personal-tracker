@@ -503,11 +503,22 @@ table.jt th.tk.tk-single{vertical-align:bottom}
 
 @media(max-width:640px){.hdr img{height:34px}.hdr-sub-text{font-size:.95rem;letter-spacing:.25em}.time-lbl{width:34px;font-size:.6rem}.time-num,.time-date{font-size:.62rem}.time-day{width:36px;height:19px;font-size:.58rem}table.jt{font-size:13px}}
 /* ── Sync modal ── */
-.sync-btn{position:fixed;bottom:20px;right:20px;z-index:200;
-  padding:8px 14px;background:var(--gold-bg);border:1px solid var(--gold-bd);
-  border-radius:20px;font-size:.78rem;color:var(--gold);cursor:pointer;
-  box-shadow:0 2px 8px rgba(0,0,0,.12);transition:all .15s;font-family:'Noto Sans SC',sans-serif}
-.sync-btn:hover{background:rgba(160,112,48,.18);border-color:var(--gold)}
+.sync-btn{position:fixed;bottom:24px;right:24px;z-index:200;
+  padding:7px 13px;background:rgba(250,246,239,.85);border:1px solid var(--gold-bd);
+  border-radius:20px;font-size:.78rem;color:var(--ink2);cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+  box-shadow:0 4px 14px rgba(141,115,84,.22),0 1px 4px rgba(0,0,0,.07);
+  transition:box-shadow .2s,transform .18s,opacity .3s,background .15s;
+  font-family:'Noto Sans SC',sans-serif;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.sync-btn:hover{background:rgba(250,246,239,.96);border-color:var(--gold);
+  box-shadow:0 6px 18px rgba(141,115,84,.28),0 2px 5px rgba(0,0,0,.09);
+  transform:translateY(-2px)}
+.sync-btn.scroll-dim{opacity:.35}
+.sync-btn.scroll-dim:hover{opacity:1}
+.sync-icon{width:13px;height:13px;flex-shrink:0;transition:transform .3s}
+.sync-icon.spinning{animation:iconSpin .7s linear infinite}
+@keyframes iconSpin{to{transform:rotate(360deg)}}
 .sync-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center}
 .sync-overlay.open{display:flex}
 .sync-modal{background:var(--surf);border:1px solid var(--gold-bd);border-radius:6px;
@@ -538,11 +549,14 @@ table.jt th.tk.tk-single{vertical-align:bottom}
 .sync-help{font-size:.7rem;color:var(--ink3);line-height:1.6;background:var(--bg2);
   padding:10px 12px;border-radius:3px;border:1px solid var(--gold-bd)}
 .sync-help code{font-size:.68rem;background:rgba(160,112,48,.1);padding:1px 4px;border-radius:2px}
-.sync-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:4px;vertical-align:middle;background:transparent;transition:background .3s}
-.sync-dot.ok{background:#4a9068}
+.sync-dot{position:absolute;top:-3px;left:-3px;width:8px;height:8px;border-radius:50%;
+  background:transparent;transition:background .3s;
+  border:1.5px solid rgba(250,246,239,.9)}
+.sync-dot.ok{background:#4a9068;animation:dotBreath 2.4s ease-in-out infinite}
 .sync-dot.err{background:#c44}
-.sync-dot.ing{background:var(--gold);animation:syncPulse .8s ease-in-out infinite}
-@keyframes syncPulse{0%,100%{opacity:1}50%{opacity:.3}}
+.sync-dot.ing{background:var(--gold);animation:syncPulse .7s ease-in-out infinite}
+@keyframes syncPulse{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes dotBreath{0%,100%{box-shadow:0 0 0 0 rgba(74,144,104,.7)}60%{box-shadow:0 0 0 4px rgba(74,144,104,0)}}
 /* ── Collapse toggle ── */
 .acct-row td{cursor:pointer;user-select:none}
 .acct-col-btn{background:none;border:none;cursor:pointer;color:var(--gold2);font-size:.82rem;padding:0 6px;transition:transform .15s;flex-shrink:0}
@@ -1951,6 +1965,15 @@ recompDcStats();
 renderPriorityBanner();
 
 // ── Collapse / expand account rows ──
+// Sync button scroll-dim
+(function(){
+  const btn=document.getElementById('sync-btn'); if(!btn) return;
+  let t; window.addEventListener('scroll',()=>{
+    btn.classList.add('scroll-dim');
+    clearTimeout(t); t=setTimeout(()=>btn.classList.remove('scroll-dim'),1400);
+  },{passive:true});
+})();
+
 function toggleCollapse(aid){
   const idx=S.collapsed.indexOf(aid);
   if(idx>=0) S.collapsed.splice(idx,1); else S.collapsed.push(aid);
@@ -2019,7 +2042,7 @@ function scDirectInput(span,eid,cid,tid,max){
 </script>
 
 <!-- ── Sync Button ── -->
-<button class="sync-btn" id="sync-btn" onclick="syncOpenModal()">☁️ 数据同步 <span id="sync-dot" class="sync-dot"></span></button>
+<button class="sync-btn" id="sync-btn" onclick="syncOpenModal()"><span id="sync-dot" class="sync-dot"></span><svg id="sync-icon" class="sync-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg><span id="sync-lbl">数据同步</span></button>
 
 <!-- ── Sync Modal ── -->
 <div class="sync-overlay" id="sync-overlay" onclick="if(event.target===this)syncCloseModal()">
@@ -2078,7 +2101,18 @@ let _syncBusy = false;       // prevent concurrent pulls
 // ── 状态指示点 ──
 function syncDot(state){ // 'ok' | 'err' | 'ing' | ''
   const d = document.getElementById('sync-dot');
+  const ic = document.getElementById('sync-icon');
+  const lb = document.getElementById('sync-lbl');
   if(d) d.className = 'sync-dot' + (state ? ' '+state : '');
+  if(ic) ic.classList.toggle('spinning', state==='ing');
+  if(lb){
+    if(state==='ing') lb.textContent='同步中…';
+    else if(state==='ok'){
+      lb.textContent='同步成功';
+      setTimeout(()=>{ if(lb.textContent==='同步成功') lb.textContent='数据同步'; },2000);
+    } else if(state==='err') lb.textContent='同步失败';
+    else lb.textContent='数据同步';
+  }
 }
 
 // ── 自动推送（每次 sv() 调用，防抖 2s） ──
