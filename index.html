@@ -451,6 +451,25 @@ td.ph{background:rgba(160,112,48,.02)!important}
 .sync-dot.err{background:#c44}
 .sync-dot.ing{background:var(--gold);animation:syncPulse .8s ease-in-out infinite}
 @keyframes syncPulse{0%,100%{opacity:1}50%{opacity:.3}}
+/* ── Collapse toggle ── */
+.acct-row td{cursor:pointer;user-select:none}
+.acct-col-btn{background:none;border:none;cursor:pointer;color:var(--gold2);font-size:.82rem;padding:0 6px;transition:transform .15s;flex-shrink:0}
+.acct-actions{display:flex;align-items:center;gap:8px}
+.acct-onedone{font-size:.65rem;padding:2px 8px;border:1px solid var(--jade-bd);border-radius:2px;background:var(--jade-bg);color:var(--jade2);cursor:pointer;transition:all .13s;white-space:nowrap}
+.acct-onedone:hover{background:rgba(46,112,80,.18)}
+.char-row-hidden{display:none}
+/* ── Progress bar ── */
+.stat-bar-wrap{height:4px;background:rgba(160,112,48,.12);border-radius:2px;margin:4px 0 2px;overflow:hidden;min-width:60px}
+.stat-bar{height:100%;border-radius:2px;transition:width .4s ease;background:var(--gold3)}
+.stat-bar.jade{background:var(--jade2)}
+/* ── Stepper direct input ── */
+.sc-n-input{width:48px;height:28px;border:none;border-bottom:1.5px solid var(--gold2);background:transparent;text-align:center;font-size:.9rem;font-weight:600;color:var(--gold);outline:none;font-family:inherit}
+/* ── Countdown urgency ── */
+.ev-cd.expired{color:var(--ink3)!important}
+.ev-cd.urgent{color:#c03020!important;animation:urgPulse 1.5s ease-in-out infinite}
+.ev-cd.warn{color:#b06020!important}
+.ev-cd.safe{color:var(--jade2)!important}
+@keyframes urgPulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
 </head>
 <body>
@@ -476,10 +495,10 @@ td.ph{background:rgba(160,112,48,.02)!important}
 </div>
 
 <div class="stats">
-  <div class="stat"><div class="stat-n" id="s-ev">—</div><div class="stat-l">活动已完成</div></div>
-  <div class="stat"><div class="stat-n" id="s-evp" style="color:var(--red)">—</div><div class="stat-l">活动完成率</div></div>
-  <div class="stat"><div class="stat-n" id="s-wp" style="color:var(--jade2)">—</div><div class="stat-l">周常完成率</div></div>
-  <div class="stat"><div class="stat-n" id="s-dp" style="color:var(--jade2)">—</div><div class="stat-l">副本完成率</div></div>
+  <div class="stat"><div class="stat-n" id="s-ev">—</div><div class="stat-bar-wrap"><div class="stat-bar" id="s-ev-bar" style="width:0%"></div></div><div class="stat-l">活动已完成</div></div>
+  <div class="stat"><div class="stat-n" id="s-evp" style="color:var(--red)">—</div><div class="stat-bar-wrap"><div class="stat-bar" id="s-evp-bar" style="width:0%"></div></div><div class="stat-l">活动完成率</div></div>
+  <div class="stat"><div class="stat-n" id="s-wp" style="color:var(--jade2)">—</div><div class="stat-bar-wrap"><div class="stat-bar jade" id="s-wp-bar" style="width:0%"></div></div><div class="stat-l">周常完成率</div></div>
+  <div class="stat"><div class="stat-n" id="s-dp" style="color:var(--jade2)">—</div><div class="stat-bar-wrap"><div class="stat-bar jade" id="s-dp-bar" style="width:0%"></div></div><div class="stat-l">副本完成率</div></div>
 </div>
 
 <div class="prio-banner" id="priority-banner"></div>
@@ -675,6 +694,7 @@ if(!S.collectData) S.collectData={};
 if(!S.tabOrder||S.tabOrder.length<6) S.tabOrder=['event','weekly','dungeon','remind','craft','completed','shop'];
 if(!S.tabOrder.includes('shop')) S.tabOrder.push('shop');
 if(!S.tabOrder.includes('collect')) S.tabOrder.push('collect');
+if(!S.collapsed) S.collapsed=[];
 if(!S.wkTasks) S.wkTasks = DEF_WK_TASKS;
 if(!S.rems) S.rems = DEF_REMS;
 if(!S.cn) S.cn = {};
@@ -689,10 +709,24 @@ let undoStack = [];
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function cdown(ds){
   if(!ds) return '';
-  const d=new Date(ds+'+08:00'), n=new Date(), df=d-n;
+  const raw=ds.includes('+')||ds.endsWith('Z')?ds:ds+'+08:00';
+  const d=new Date(raw), n=new Date(), df=d-n;
   if(isNaN(df)||df<0) return '已截止';
   const dy=Math.floor(df/86400000), hr=Math.floor((df%86400000)/3600000);
-  return dy>0 ? `剩 ${dy} 天 ${hr} 时` : `剩 ${hr} 小时`;
+  if(dy===0 && hr===0) return '今天到期';
+  if(dy===0) return `今天到期 · 剩 ${hr} 时`;
+  if(dy===1) return `明天到期 · 剩 ${hr} 时`;
+  if(dy===2) return `后天到期`;
+  return `剩 ${dy} 天`;
+}
+function cdownClass(ds){
+  if(!ds) return '';
+  const raw=ds.includes('+')||ds.endsWith('Z')?ds:ds+'+08:00';
+  const df=new Date(raw)-new Date();
+  if(isNaN(df)||df<0) return 'expired';
+  if(df<86400000) return 'urgent';
+  if(df<3*86400000) return 'warn';
+  return 'safe';
 }
 
 function bjKey(){
@@ -781,7 +815,7 @@ function renderEv(){
         <span style="font-size:.68rem;color:var(--ink3)">截止</span>
         <input class="ev-date-inp" type="date" value="${esc((ev.endDate||'').slice(0,10))}"
           onchange="updEvDatePart('${ev.id}','date',this.value)"/>
-        ${cdo?`<span class="ev-cd">⏱ ${cdo}</span>`:''}
+        ${cdo?`<span class="ev-cd ${cdownClass(ev.endDate)}">⏱ ${cdo}</span>`:''}
         <button class="btn-icon" onclick="delEv('${ev.id}')" title="删除活动">✕</button>
       </div>
     </div>`;
@@ -810,6 +844,7 @@ function renderEv(){
             onblur="updTkDays('${ev.id}','${t.id}',this.value)" title="签到总天数"/>`:'' }
           <button class="btn-del-tk" onclick="delTk('${ev.id}','${t.id}')" title="删除此列">✕</button>
         </div>
+        <button class="acct-onedone" style="margin-top:2px;font-size:.6rem" onclick="colOneDone('${ev.id}','${t.id}')" title="全角色标记完成">全选</button>
       </div>`;
       r2.appendChild(th);
     });
@@ -827,11 +862,15 @@ function renderEv(){
 
   ACCTS.forEach(ac=>{
     // Account separator
-    const ar = tbody.insertRow(); ar.className='acct-row';
-    const ad = ar.insertCell(); ad.colSpan=totCols; ad.textContent=ac.lbl;
+    const ar = tbody.insertRow(); ar.className='acct-row'; ar.dataset.acid=ac.id;
+    ar.onclick=function(e){if(e.target.tagName!=='BUTTON')toggleCollapse(ac.id)};
+    const ad = ar.insertCell(); ad.colSpan=totCols;
+    const collapsed=S.collapsed.includes(ac.id);
+    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsed?'▶':'▼'}</button><span>${ac.lbl}</span><button class="acct-onedone" onclick="event.stopPropagation();acctOneDone('${ac.id}')" title="全角色日常一键完成">一键完成</button></div>`;
 
     ac.chars.forEach((ch, chIdx)=>{
-      const row = tbody.insertRow();
+      const row = tbody.insertRow(); row.dataset.acct=ac.id;
+      if(S.collapsed.includes(ac.id)) row.classList.add('char-row-hidden');
       const nd = row.insertCell(); nd.className='ch-d';
       nd.innerHTML=`<div class="cn">
         ${ch.icon?`<img src="${ch.icon}" style="${ch.iconStyle||'height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0'}"/>`:`<div class="cdot" style="background:${ch.col}"></div>`}
@@ -849,7 +888,7 @@ function renderEv(){
             const full = v>=t.days;
             td.innerHTML=`<div class="sc${full?' full':''}">
               <button class="sc-b" onclick="scDec('${ev.id}','${ac.id}','${t.id}',${t.days})">−</button>
-              <span class="sc-n">${v}/${t.days}</span>
+              <span class="sc-n" title="点击直接输入" onclick="scDirectInput(this,'${ev.id}','${ac.id}','${t.id}',${t.days})">${v}/${t.days}</span>
               <button class="sc-b" onclick="scInc('${ev.id}','${ac.id}','${t.id}',${t.days})">＋</button>
             </div>`;
           } else {
@@ -869,7 +908,10 @@ function renderEv(){
 
 function updEvStats(d,t){
   document.getElementById('s-ev').textContent = Math.round(d)+'/'+t;
-  document.getElementById('s-evp').textContent = t?Math.round(d/t*100)+'%':'—';
+  const pct=t?Math.round(d/t*100):0;
+  document.getElementById('s-evp').textContent = t?pct+'%':'—';
+  document.getElementById('s-ev-bar').style.width=(t?Math.min(100,d/t*100):0)+'%';
+  document.getElementById('s-evp-bar').style.width=pct+'%';
 }
 function recompEvStats(){
   let t=0,d=0;
@@ -982,11 +1024,15 @@ function renderWk(){
   let tot=0, dn=0;
 
   ACCTS.forEach(ac=>{
-    const ar=tbody.insertRow(); ar.className='acct-row';
-    const ad=ar.insertCell(); ad.colSpan=1+tasks.length; ad.textContent=ac.lbl;
+    const ar=tbody.insertRow(); ar.className='acct-row'; ar.dataset.acid=ac.id;
+    ar.onclick=function(e){if(e.target.tagName!=='BUTTON')toggleCollapse(ac.id)};
+    const ad=ar.insertCell(); ad.colSpan=1+tasks.length;
+    const collapsedWk=S.collapsed.includes(ac.id);
+    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsedWk?'▶':'▼'}</button><span>${ac.lbl}</span></div>`;
 
     ac.chars.forEach(ch=>{
-      const row=tbody.insertRow();
+      const row=tbody.insertRow(); row.dataset.acct=ac.id;
+      if(S.collapsed.includes(ac.id)) row.classList.add('char-row-hidden');
       const nd=row.insertCell(); nd.className='ch-d';
       nd.innerHTML=`<div class="cn">
         ${ch.icon?`<img src="${ch.icon}" style="${ch.iconStyle||'height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0'}"/>`:`<div class="cdot" style="background:${ch.col}"></div>`}
@@ -1015,7 +1061,9 @@ function renderWk(){
   });
 
   wrap.innerHTML=''; wrap.appendChild(tbl);
-  document.getElementById('s-wp').textContent = tot?Math.round(dn/tot*100)+'%':'—';
+  const wpPct2=tot?Math.round(dn/tot*100):0;
+  document.getElementById('s-wp').textContent = tot?wpPct2+'%':'—';
+  document.getElementById('s-wp-bar').style.width=wpPct2+'%';
 }
 
 function togWc(cid,tid,el){
@@ -1028,13 +1076,17 @@ function recompWkStats(){
     if(!tk.chars.includes(c.id))return;
     t++;if(gwc(c.id,tk.id))d++;
   }));
-  document.getElementById('s-wp').textContent = t?Math.round(d/t*100)+'%':'—';
+  const wpPct=t?Math.round(d/t*100):0;
+  document.getElementById('s-wp').textContent = t?wpPct+'%':'—';
+  document.getElementById('s-wp-bar').style.width=wpPct+'%';
 }
 function getDcHL(){ return S.dcHighlight ? new Set(S.dcHighlight) : new Set(ALL_CH.map(c=>c.id)); }
 function recompDcStats(){
   const hl=getDcHL(); let t=0,d=0;
   ALL_CH.forEach(c=>{ if(!hl.has(c.id))return; DUNGEON_COLS.forEach(col=>{ t++;if(gdc(c.id,col.key))d++; }); });
-  document.getElementById('s-dp').textContent = t?Math.round(d/t*100)+'%':'—';
+  const dpPct=t?Math.round(d/t*100):0;
+  document.getElementById('s-dp').textContent = t?dpPct+'%':'—';
+  document.getElementById('s-dp-bar').style.width=dpPct+'%';
 }
 function togDnFilter(){
   const panel=document.getElementById('dn-filter-panel');
@@ -1417,10 +1469,14 @@ function renderShop(){
   // body
   const tbody=tbl.createTBody();
   ACCTS.forEach(function(ac){
-    const ar=tbody.insertRow(); ar.className='acct-row';
-    const ad=ar.insertCell(); ad.colSpan=1+cols.length; ad.textContent=ac.lbl;
+    const ar=tbody.insertRow(); ar.className='acct-row'; ar.dataset.acid=ac.id;
+    ar.onclick=function(e){if(e.target.tagName!=='BUTTON')toggleCollapse(ac.id)};
+    const ad=ar.insertCell(); ad.colSpan=1+cols.length;
+    const collapsedSh=S.collapsed.includes(ac.id);
+    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsedSh?'▶':'▼'}</button><span>${ac.lbl}</span></div>`;
     ac.chars.forEach(function(ch){
-      const row=tbody.insertRow();
+      const row=tbody.insertRow(); row.dataset.acct=ac.id;
+      if(S.collapsed.includes(ac.id)) row.classList.add('char-row-hidden');
       const nd=row.insertCell(); nd.className='ch-d';
       const cn=document.createElement('div'); cn.className='cn';
       if(ch.icon){const ic=document.createElement('img');ic.src=ch.icon;ic.style.cssText=ch.iconStyle||'height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0';cn.appendChild(ic);}
@@ -1482,10 +1538,14 @@ function renderCollect(){
   // body
   var tbody=tbl.createTBody();
   ACCTS.forEach(function(ac){
-    var ar=tbody.insertRow(); ar.className='acct-row';
-    var ad=ar.insertCell(); ad.colSpan=1+cols.length; ad.textContent=ac.lbl;
+    var ar=tbody.insertRow(); ar.className='acct-row'; ar.dataset.acid=ac.id;
+    ar.onclick=function(e){if(e.target.tagName!=='BUTTON')toggleCollapse(ac.id)};
+    var ad=ar.insertCell(); ad.colSpan=1+cols.length;
+    var collapsedCl=S.collapsed.includes(ac.id);
+    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsedCl?'▶':'▼'}</button><span>${ac.lbl}</span></div>`;
     ac.chars.forEach(function(ch){
-      var row=tbody.insertRow();
+      var row=tbody.insertRow(); row.dataset.acct=ac.id;
+      if(S.collapsed.includes(ac.id)) row.classList.add('char-row-hidden');
       var nd=row.insertCell(); nd.className='ch-d';
       var cn=document.createElement('div'); cn.className='cn';
       if(ch.icon){var ic=document.createElement('img');ic.src=ch.icon;ic.style.cssText=ch.iconStyle||'height:16px;vertical-align:middle;margin-right:2px;flex-shrink:0';cn.appendChild(ic);}
@@ -1549,10 +1609,14 @@ function renderDungeon(){
   const hl=getDcHL();
   const tbody = tbl.createTBody();
   ACCTS.forEach(ac=>{
-    const ar=tbody.insertRow(); ar.className='acct-row';
-    const ad=ar.insertCell(); ad.colSpan=1+DUNGEON_COLS.length; ad.textContent=ac.lbl;
+    const ar=tbody.insertRow(); ar.className='acct-row'; ar.dataset.acid=ac.id;
+    ar.onclick=function(e){if(e.target.tagName!=='BUTTON')toggleCollapse(ac.id)};
+    const ad=ar.insertCell(); ad.colSpan=1+DUNGEON_COLS.length;
+    const collapsedDn=S.collapsed.includes(ac.id);
+    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsedDn?'▶':'▼'}</button><span>${ac.lbl}</span></div>`;
     ac.chars.forEach(ch=>{
-      const row=tbody.insertRow();
+      const row=tbody.insertRow(); row.dataset.acct=ac.id;
+      if(S.collapsed.includes(ac.id)) row.classList.add('char-row-hidden');
       if(!hl.has(ch.id)) row.classList.add('dn-row-dim');
       const nd=row.insertCell(); nd.className='ch-d';
       nd.innerHTML=`<div class="cn">
@@ -1709,6 +1773,58 @@ showTab('event', null);
 recompWkStats();
 recompDcStats();
 renderPriorityBanner();
+
+// ── Collapse / expand account rows ──
+function toggleCollapse(aid){
+  const idx=S.collapsed.indexOf(aid);
+  if(idx>=0) S.collapsed.splice(idx,1); else S.collapsed.push(aid);
+  sv();
+  document.querySelectorAll(`tr[data-acct="${aid}"]`).forEach(r=>r.classList.toggle('char-row-hidden'));
+  const btn=document.querySelector(`tr.acct-row[data-acid="${aid}"] .acct-col-btn`);
+  if(btn) btn.textContent=S.collapsed.includes(aid)?'▶':'▼';
+}
+
+// ── Account one-click complete (events tab only) ──
+function acctOneDone(aid){
+  const ac=ACCTS.find(a=>a.id===aid); if(!ac) return;
+  S.events.forEach(ev=>ev.tasks.forEach(tk=>{
+    if(tk.type==='signin'){
+      const v=gec(ev.id,aid,tk.id);
+      if(v<tk.days) sec_(ev.id,aid,tk.id,tk.days);
+    } else {
+      ac.chars.forEach(ch=>{ if(!gec(ev.id,ch.id,tk.id)) sec_(ev.id,ch.id,tk.id,1); });
+    }
+  }));
+  renderEv();
+}
+
+// ── Column one-click complete (events tab) ──
+function colOneDone(eid,tid){
+  const ev=S.events.find(e=>e.id===eid); if(!ev) return;
+  const tk=ev.tasks.find(t=>t.id===tid); if(!tk) return;
+  if(tk.type==='signin'){
+    ACCTS.forEach(ac=>{ if(gec(eid,ac.id,tid)<tk.days) sec_(eid,ac.id,tid,tk.days); });
+  } else {
+    ALL_CH.forEach(ch=>{ if(!gec(eid,ch.id,tid)) sec_(eid,ch.id,tid,1); });
+  }
+  renderEv();
+}
+
+// ── Stepper direct input ──
+function scDirectInput(span,eid,cid,tid,max){
+  const cur=gec(eid,cid,tid);
+  const inp=document.createElement('input');
+  inp.type='number'; inp.min=0; inp.max=max; inp.value=cur;
+  inp.className='sc-n-input';
+  span.replaceWith(inp); inp.focus(); inp.select();
+  function commit(){
+    let v=parseInt(inp.value,10);
+    if(isNaN(v)||v<0) v=0; if(v>max) v=max;
+    sec_(eid,cid,tid,v); renderEv();
+  }
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') inp.blur(); if(e.key==='Escape'){inp.value=cur;inp.blur();} });
+}
 </script>
 
 <!-- ── Sync Button ── -->
