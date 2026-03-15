@@ -146,7 +146,9 @@ table.jt th.eg{
 /* Task header */
 table.jt th.tk{
   background:rgba(160,112,48,.04);border-top:none!important;
-  padding:8px 8px 10px;text-align:center;font-weight:400;
+  border-left-color:rgba(160,112,48,.07)!important;
+  border-right-color:rgba(160,112,48,.07)!important;
+  padding:8px 8px 12px;text-align:center;font-weight:400;
   color:var(--ink2);font-size:.85rem;min-width:100px;vertical-align:top}
 /* Char column */
 table.jt th.ch-h,table.jt td.ch-d{
@@ -179,8 +181,8 @@ td.ph{background:rgba(160,112,48,.02)!important}
 .cn{display:flex;align-items:center;gap:8px}
 .cdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .clbl{font-size:1rem;font-weight:600;font-family:'Noto Serif SC',serif}
-.ctag{font-size:.58rem;color:var(--gold);border:1px solid var(--gold-bd);
-  padding:1px 5px;border-radius:2px;background:var(--gold-bg)}
+.ctag{font-size:.58rem;color:var(--gold);border:1px dashed rgba(160,112,48,.45);
+  padding:1px 6px;border-radius:4px;background:var(--gold-bg);letter-spacing:.04em}
 
 /* ── Checkbox ── */
 .cb{display:inline-flex;align-items:center;justify-content:center;
@@ -233,10 +235,8 @@ td.ph{background:rgba(160,112,48,.02)!important}
 
 /* ── Event controls ── */
 .ev-ctrl{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
-/* Single-col eg cell: fill full rowspan height, push 全选 to bottom */
-table.jt th.eg.eg-single{vertical-align:top}
-table.jt th.eg.eg-single .ev-ctrl{height:100%}
-table.jt th.eg.eg-single .ev-ctrl-sel{margin-top:auto;width:100%;display:flex;justify-content:center}
+/* Single-col row-2 cell: centered 全选 button, matching multi-col row-2 height */
+.tk-single-sel{display:flex;align-items:center;justify-content:center;padding:6px 4px}
 .ev-ctrl-row{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
 .ev-name-inp{background:transparent;border:none;border-bottom:1px solid rgba(160,112,48,.3);
   color:var(--gold);font-family:'Noto Serif SC',serif;font-size:1.05rem;font-weight:700;
@@ -489,10 +489,12 @@ table.jt th.eg.eg-single .ev-ctrl-sel{margin-top:auto;width:100%;display:flex;ju
 .acct-onedone.clear:hover{background:linear-gradient(180deg,rgba(178,69,49,.22),rgba(178,69,49,.13))}
 .char-row-hidden{display:none}
 /* ── Row completion highlight ── */
-table.jt tr.row-done td{background:rgba(46,112,80,.04)!important}
-table.jt tr.row-done td.ch-d{background:rgba(46,112,80,.09)!important}
-table.jt tr.row-done:hover td{background:rgba(46,112,80,.08)!important}
-table.jt tr.row-done:hover td.ch-d{background:rgba(46,112,80,.14)!important}
+table.jt tr.row-done td{background:rgba(74,125,99,.04)!important}
+table.jt tr.row-done td.ch-d{
+  background:linear-gradient(90deg,rgba(74,125,99,.14) 0%,rgba(74,125,99,.07) 100%)!important}
+table.jt tr.row-done:hover td{background:rgba(74,125,99,.08)!important}
+table.jt tr.row-done:hover td.ch-d{
+  background:linear-gradient(90deg,rgba(74,125,99,.2) 0%,rgba(74,125,99,.1) 100%)!important}
 /* ── Checked cell tint ── */
 table.jt td.td-done{background:rgba(46,112,80,.07)!important}
 table.jt tr.row-done td.td-done{background:rgba(46,112,80,.12)!important}
@@ -846,14 +848,7 @@ function renderEv(){
     const span = ev.tasks.length + (multiTask ? 1 : 0);
     const th = document.createElement('th');
     th.className='eg'; th.colSpan=span;
-    if(isSingle){ th.rowSpan=2; th.classList.add('eg-single'); }
     const cdo = cdown(ev.endDate);
-    // For single-col: compute full-select state to show inline button
-    const singleSelBtn = isSingle ? (()=>{
-      const t0=ev.tasks[0];
-      const cd=t0.type==='signin'?ACCTS.every(ac=>gec(ev.id,ac.id,t0.id)>=t0.days):ALL_CH.every(ch=>!!gec(ev.id,ch.id,t0.id));
-      return `<div class="ev-ctrl-sel"><button class="acct-onedone${cd?' clear':''}" style="font-size:.6rem" onclick="colOneDone('${ev.id}','${t0.id}',this)" title="${cd?'清空所有角色进度':'全角色标记完成'}">${cd?'取消全选':'全选'}</button></div>`;
-    })() : '';
     th.innerHTML=`<div class="ev-ctrl">
       <div class="ev-ctrl-row">
         <input class="ev-name-inp" value="${esc(ev.name)}" placeholder="活动名称"
@@ -867,7 +862,6 @@ function renderEv(){
         ${cdo?`<span class="ev-cd ${cdownClass(ev.endDate)}">⏱ ${cdo}</span>`:''}
         <button class="btn-icon" onclick="delEv('${ev.id}')" title="删除活动">✕</button>
       </div>
-      ${singleSelBtn}
     </div>`;
     r1.appendChild(th);
   });
@@ -883,7 +877,15 @@ function renderEv(){
   evs.forEach(ev=>{
     const multiTask = ev.multiTask !== false;
     const isSingle = !multiTask && ev.tasks.length === 1;
-    if(isSingle) return; // rowSpan=2 already set in row 1 — no task header needed
+    if(isSingle){
+      // Slim tk cell: just the 全选 button, aligned with multi-col row-2 buttons
+      const th = document.createElement('th'); th.className='tk';
+      const t0=ev.tasks[0];
+      const cd=t0.type==='signin'?ACCTS.every(ac=>gec(ev.id,ac.id,t0.id)>=t0.days):ALL_CH.every(ch=>!!gec(ev.id,ch.id,t0.id));
+      th.innerHTML=`<div class="tk-single-sel"><button class="acct-onedone${cd?' clear':''}" style="font-size:.6rem" onclick="colOneDone('${ev.id}','${t0.id}',this)" title="${cd?'清空所有角色进度':'全角色标记完成'}">${cd?'取消全选':'全选'}</button></div>`;
+      r2.appendChild(th);
+      return;
+    }
     ev.tasks.forEach(t=>{
       const th = document.createElement('th'); th.className='tk';
       th.innerHTML=`<div class="tk-ctrl">
