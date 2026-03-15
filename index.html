@@ -423,19 +423,36 @@ table.jt th.tk:hover .wk-del-btn,.wk-del-btn:focus{color:rgba(160,48,48,.45)}
   background:white;color:var(--ink2);cursor:pointer;font-family:'Noto Serif SC',serif;
   font-size:.85rem;transition:all .13s}
 .tog-btn.sel{background:var(--gold-bg);border-color:var(--gold);color:var(--gold);font-weight:600}
-.char-check-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:4px}
+.char-check-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:4px}
+.char-acct-lbl{grid-column:1/-1;font-size:.63rem;color:var(--ink4);letter-spacing:.1em;
+  padding:6px 0 3px;border-bottom:1px solid rgba(160,112,48,.15)}
+.char-acct-lbl:first-child{padding-top:0}
 .char-chk{display:flex;align-items:center;gap:5px;cursor:pointer;padding:4px 6px;
-  border:1px solid var(--gold-bd);border-radius:3px;background:white;transition:all .12s;font-size:.88rem}
-.char-chk.sel{background:var(--gold-bg);border-color:var(--gold)}
+  border:1.5px solid var(--gold-bd);border-radius:3px;background:white;transition:all .12s;
+  font-size:.88rem;position:relative}
+.char-chk.sel{background:var(--gold-bg);border-color:var(--gold);border-width:2px}
+.char-chk.sel::after{content:'✓';position:absolute;top:-6px;right:-5px;width:13px;height:13px;
+  border-radius:50%;background:var(--gold);color:#fff;font-size:.58rem;
+  display:flex;align-items:center;justify-content:center;line-height:13px;text-align:center;
+  box-shadow:0 1px 3px rgba(0,0,0,.15)}
 .char-chk input{display:none}
+/* Note switch */
+.note-sw-wrap{display:flex;align-items:center;gap:10px;margin-top:6px;cursor:pointer;user-select:none}
+.note-sw{position:relative;width:34px;height:18px;flex-shrink:0}
+.note-sw input{opacity:0;width:0;height:0;position:absolute}
+.note-sw-track{position:absolute;inset:0;border-radius:9px;background:rgba(160,112,48,.2);transition:background .2s}
+.note-sw input:checked + .note-sw-track{background:var(--gold)}
+.note-sw-thumb{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+  background:white;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .2s}
+.note-sw input:checked ~ .note-sw-thumb{left:18px}
 .modal-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
 .btn-cancel{padding:7px 18px;border:1px solid var(--gold-bd);border-radius:3px;
   background:transparent;color:var(--ink2);cursor:pointer;font-family:'Noto Serif SC',serif;font-size:.9rem;transition:all .12s}
 .btn-cancel:hover{border-color:var(--ink2)}
-.btn-ok{padding:7px 20px;border:1px solid var(--gold);border-radius:3px;
-  background:var(--gold-bg);color:var(--gold);cursor:pointer;font-family:'Noto Serif SC',serif;
+.btn-ok{padding:7px 20px;border:1px solid rgba(110,70,10,.55);border-radius:3px;
+  background:rgba(118,76,12,.82);color:#fff8e8;cursor:pointer;font-family:'Noto Serif SC',serif;
   font-size:.9rem;font-weight:600;transition:all .12s}
-.btn-ok:hover{background:rgba(160,112,48,.18)}
+.btn-ok:hover{background:rgba(95,60,8,.9)}
 
 /* ── Reminders ── */
 .rem-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
@@ -1386,7 +1403,9 @@ function openAddWkModal(){
     <h3>添加周常任务列</h3>
     <div class="modal-field">
       <label class="modal-label">任务名称</label>
-      <input class="modal-inp" id="m-wk-name" placeholder="任务名称" oninput="pendingWkTask.n=this.value"/>
+      <input class="modal-inp" id="m-wk-name" placeholder="例：侠行点上限、五行石兑换"
+        oninput="pendingWkTask.n=this.value"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();confirmAddWk()}"/>
     </div>
     <div class="modal-field">
       <label class="modal-label">适用角色（点击选 / 取消）</label>
@@ -1398,36 +1417,45 @@ function openAddWkModal(){
       </div>
     </div>
     <div class="modal-field">
-      <label class="modal-label">是否带备注框（如名望礼包）</label>
-      <div class="modal-tog">
-        <button class="tog-btn" id="m-note-n" onclick="setWkNote(false)">不需要</button>
-        <button class="tog-btn" id="m-note-y" onclick="setWkNote(true)">需要备注</button>
-      </div>
+      <label class="modal-label">备注框</label>
+      <label class="note-sw-wrap">
+        <span class="note-sw">
+          <input type="checkbox" id="m-note-sw" onchange="pendingWkTask.note=this.checked"/>
+          <span class="note-sw-track"></span>
+          <span class="note-sw-thumb"></span>
+        </span>
+        <span style="font-size:.82rem;color:var(--ink2)">开启备注框<span style="color:var(--ink4);font-size:.75rem">（如名望礼包、兑换进度）</span></span>
+      </label>
     </div>
     <div class="modal-foot">
       <button class="btn-cancel" onclick="closeModal()">取消</button>
       <button class="btn-ok" onclick="confirmAddWk()">确认添加</button>
     </div>`;
   rebuildCharGrid();
-  document.getElementById('m-note-n').classList.add('sel');
   document.getElementById('modal-bg').style.display='flex';
+  document.getElementById('m-wk-name').focus();
 }
 function rebuildCharGrid(){
   const grid=document.getElementById('m-char-grid'); if(!grid)return;
   grid.innerHTML='';
-  ALL_CH.forEach(ch=>{
-    const sel=pendingWkTask.chars.includes(ch.id);
-    const d=document.createElement('div');
-    d.className='char-chk'+(sel?' sel':'');
-    d.innerHTML=`<div class="cdot" style="background:${ch.col};width:8px;height:8px"></div>
-      <span style="font-size:.88rem;color:${ch.txt};font-weight:600">${ch.n}</span>`;
-    d.onclick=()=>{
-      if(pendingWkTask.chars.includes(ch.id))
-        pendingWkTask.chars=pendingWkTask.chars.filter(i=>i!==ch.id);
-      else pendingWkTask.chars.push(ch.id);
-      d.classList.toggle('sel',pendingWkTask.chars.includes(ch.id));
-    };
-    grid.appendChild(d);
+  ACCTS.forEach(ac=>{
+    const lbl=document.createElement('div');
+    lbl.className='char-acct-lbl'; lbl.textContent=ac.lbl;
+    grid.appendChild(lbl);
+    ac.chars.forEach(ch=>{
+      const sel=pendingWkTask.chars.includes(ch.id);
+      const d=document.createElement('div');
+      d.className='char-chk'+(sel?' sel':'');
+      d.innerHTML=`<div class="cdot" style="background:${ch.col};width:8px;height:8px;border-radius:50%;flex-shrink:0"></div>
+        <span style="font-size:.88rem;color:${ch.txt};font-weight:600">${ch.n}</span>`;
+      d.onclick=()=>{
+        if(pendingWkTask.chars.includes(ch.id))
+          pendingWkTask.chars=pendingWkTask.chars.filter(i=>i!==ch.id);
+        else pendingWkTask.chars.push(ch.id);
+        d.classList.toggle('sel',pendingWkTask.chars.includes(ch.id));
+      };
+      grid.appendChild(d);
+    });
   });
 }
 function selAllChars(mode){
@@ -1435,11 +1463,6 @@ function selAllChars(mode){
   else if(mode===false) pendingWkTask.chars=ALL_CH.filter(c=>c.main).map(c=>c.id);
   else pendingWkTask.chars=[];
   rebuildCharGrid();
-}
-function setWkNote(v){
-  pendingWkTask.note=v;
-  document.getElementById('m-note-n').classList.toggle('sel',!v);
-  document.getElementById('m-note-y').classList.toggle('sel',v);
 }
 function confirmAddWk(){
   if(!pendingWkTask.n.trim()){alert('请填写任务名称');return}
