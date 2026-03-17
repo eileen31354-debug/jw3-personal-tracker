@@ -1148,7 +1148,7 @@ const DEF_WK_TASKS = [
   {id:'w4',n:'帮会订单',    chars:ALL_CH_IDS},
   {id:'w5',n:'家园订单',    chars:ALL_CH_IDS},
   {id:'w6',n:'五行石换忆昔石',chars:ALL_CH_IDS},
-  {id:'w7',n:'名望周礼包',  chars:ALL_CH_IDS, note:true},
+  {id:'w7',n:'名望周礼包',  chars:['c1','c4','c7'], note:true},
   {id:'w8',n:'调香',        chars:ALL_CH_IDS},
   {id:'w9',n:'血战天策',    chars:['c1','c4','c7']},
 ];
@@ -1193,6 +1193,8 @@ if(!S.tabOrder.includes('shop')) S.tabOrder.push('shop');
 if(!S.tabOrder.includes('collect')) S.tabOrder.push('collect');
 if(!S.collapsed) S.collapsed=[];
 if(!S.wkTasks) S.wkTasks = DEF_WK_TASKS;
+// sync chars from DEF (config-only field, not user data)
+S.wkTasks.forEach(t=>{const d=DEF_WK_TASKS.find(x=>x.id===t.id);if(d)t.chars=d.chars;});
 if(!S.rems) S.rems = DEF_REMS;
 if(!S.cn) S.cn = {};
 function gid(){return 'i'+Date.now()+Math.random().toString(36).slice(2,5)}
