@@ -1286,7 +1286,13 @@ function sec_(e,c,t,v){S.ec[`${e}_${c}_${t}`]=v; sv()}
 
 function renderEv(){
   const wrap = document.getElementById('ev-wrap');
-  const evs = S.events;
+  const evs = [...S.events].sort((a,b)=>{
+    const da=daysLeft(a.endDate), db=daysLeft(b.endDate);
+    if(da==null&&db==null) return 0;
+    if(da==null) return 1;
+    if(db==null) return -1;
+    return da-db;
+  });
 
   const tbl = document.createElement('table');
   tbl.className = 'jt';
