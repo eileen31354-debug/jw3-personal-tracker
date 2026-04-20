@@ -576,6 +576,14 @@ table.jt th.tk.tk-single{vertical-align:bottom}
   -webkit-appearance:none;appearance:none}
 table.jt th.tk:hover .wk-del-btn,.wk-del-btn:focus{color:rgba(160,48,48,.45)}
 .wk-del-btn:hover{color:var(--red)!important;background:rgba(160,48,48,.1)!important}
+.wk-edit-btn{
+  position:absolute;top:2px;left:2px;
+  background:transparent;border:none;cursor:pointer;
+  padding:2px;line-height:1;border-radius:3px;
+  color:transparent;transition:color .15s,background .15s;
+  -webkit-appearance:none;appearance:none}
+table.jt th.tk:hover .wk-edit-btn,.wk-edit-btn:focus{color:rgba(74,122,136,.5)}
+.wk-edit-btn:hover{color:var(--stone)!important;background:rgba(74,122,136,.1)!important}
 
 /* ── Weekly note ── */
 .w-note{display:block;width:92px;margin:3px auto 0;font-size:.68rem;
@@ -1194,8 +1202,8 @@ if(!S.tabOrder.includes('shop')) S.tabOrder.push('shop');
 if(!S.tabOrder.includes('collect')) S.tabOrder.push('collect');
 if(!S.collapsed) S.collapsed=[];
 if(!S.wkTasks) S.wkTasks = DEF_WK_TASKS;
-// sync chars from DEF (config-only field, not user data)
-S.wkTasks.forEach(t=>{const d=DEF_WK_TASKS.find(x=>x.id===t.id);if(d)t.chars=d.chars;});
+// ensure all tasks have a chars array (in case of old data without it)
+S.wkTasks.forEach(t=>{if(!t.chars)t.chars=[...ALL_CH_IDS];});
 if(!S.rems) S.rems = DEF_REMS;
 if(!S.cn) S.cn = {};
 function gid(){return 'i'+Date.now()+Math.random().toString(36).slice(2,5)}
@@ -1655,6 +1663,7 @@ function renderWk(){
     const th = document.createElement('th'); th.className='tk';
     th.innerHTML=`<div class="wk-th-ctrl">
       <span class="wk-th-name" style="color:var(--ink2);font-size:.82rem;font-weight:600">${esc(t.n)}</span>
+      <button class="wk-edit-btn" onclick="openEditWkModal('${t.id}')" title="编辑此列"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-9 9H2v-3z"/><line x1="9" y1="4" x2="12" y2="7"/></svg></button>
       <button class="wk-del-btn" onclick="delWkTask('${t.id}')" title="删除此列"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,5 13,5"/><path d="M6 5V3h4v2"/><path d="M4 5l1 8h6l1-8"/><line x1="6.5" y1="7.5" x2="6.5" y2="11"/><line x1="9.5" y1="7.5" x2="9.5" y2="11"/></svg></button>
     </div>`;
     hr.appendChild(th);
@@ -1821,6 +1830,54 @@ function delWkTask(id){
   const tk=S.wkTasks.find(t=>t.id===id); if(!tk)return;
   S.wkTasks=S.wkTasks.filter(t=>t.id!==id); sv(); renderWk();
   showToast(`已删除周常「${tk.n}」`, ()=>{S.wkTasks.push(tk);sv();renderWk()});
+}
+
+// ── Edit weekly task modal ──
+function openEditWkModal(id){
+  const tk=S.wkTasks.find(t=>t.id===id); if(!tk)return;
+  pendingWkTask = {id:tk.id, n:tk.n, chars:[...tk.chars], note:!!tk.note, _editing:true};
+  const body = document.getElementById('modal-body');
+  body.innerHTML=`
+    <h3>编辑周常任务列</h3>
+    <div class="modal-field">
+      <label class="modal-label">任务名称</label>
+      <input class="modal-inp" id="m-wk-name" value="${esc(tk.n)}" placeholder="例：侠行点上限、五行石兑换"
+        oninput="pendingWkTask.n=this.value"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();confirmEditWk()}"/>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">适用角色（点击选 / 取消）</label>
+      <div class="char-check-grid" id="m-char-grid"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="tog-btn" onclick="selAllChars(true)">全选</button>
+        <button class="tog-btn" onclick="selAllChars(false)">仅大号</button>
+        <button class="tog-btn" onclick="selAllChars(null)">清空</button>
+      </div>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">备注框</label>
+      <label class="note-sw-wrap">
+        <span class="note-sw">
+          <input type="checkbox" id="m-note-sw" ${tk.note?'checked':''} onchange="pendingWkTask.note=this.checked"/>
+          <span class="note-sw-track"></span>
+          <span class="note-sw-thumb"></span>
+        </span>
+        <span style="font-size:.82rem;color:var(--ink2)">开启备注框<span style="color:var(--ink4);font-size:.75rem">（如名望礼包、兑换进度）</span></span>
+      </label>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-ok" onclick="confirmEditWk()">保存修改</button>
+    </div>`;
+  rebuildCharGrid();
+  document.getElementById('modal-bg').style.display='flex';
+  document.getElementById('m-wk-name').focus();
+}
+function confirmEditWk(){
+  if(!pendingWkTask.n.trim()){alert('请填写任务名称');return}
+  const tk=S.wkTasks.find(t=>t.id===pendingWkTask.id); if(!tk)return;
+  tk.n=pendingWkTask.n; tk.chars=pendingWkTask.chars; tk.note=pendingWkTask.note;
+  sv(); closeModal(); renderWk();
 }
 
 // ── Add weekly task modal ──
