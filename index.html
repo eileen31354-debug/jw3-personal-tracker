@@ -159,6 +159,9 @@ body{background:var(--bg);color:var(--ink);font-family:'Noto Serif SC',serif;min
 /* Dungeon highlight filter */
 .dn-filter-btn{font-size:.78rem;padding:3px 10px;border:1px solid var(--gold-bd);border-radius:3px;background:transparent;color:var(--ink2);cursor:pointer;transition:all .15s}
 .dn-filter-btn:hover,.dn-filter-btn.active{background:rgba(160,112,48,.12);color:var(--gold)}
+.toggle-all-btn{font-size:.75rem;padding:3px 10px;border:1px solid var(--gold-bd);border-radius:3px;background:rgba(141,115,84,.07);color:var(--ink2);cursor:pointer;transition:all .15s;white-space:nowrap;letter-spacing:.02em}
+.toggle-all-btn:hover{background:rgba(160,112,48,.15);color:var(--gold);border-color:var(--gold)}
+.ev-toolbar{display:flex;align-items:center;justify-content:flex-end;padding:0 2px 8px}
 .dn-filter-panel{display:none;margin:8px 0 4px;padding:10px 14px;background:var(--surf);border:1px solid var(--gold-bd);border-radius:4px;flex-direction:column;gap:0}
 .dn-filter-panel.open{display:flex}
 /* quick action row */
@@ -1014,6 +1017,9 @@ table.jt tr.row-done td.td-done{background:rgba(46,112,80,.12)!important}
 
 <div class="main">
   <div id="tab-event" class="panel active">
+    <div class="ev-toolbar">
+      <button class="toggle-all-btn" id="ev-toggle-all" onclick="toggleAllCollapse()">折叠全部</button>
+    </div>
     <div class="tscroll" id="ev-wrap"></div>
     <div id="ev-add-fab" class="sp-add-fab" onclick="addEv()">＋ 添加活动</div>
   </div>
@@ -1023,6 +1029,7 @@ table.jt tr.row-done td.td-done{background:rgba(46,112,80,.12)!important}
         <span class="sec-ttl">每周任务</span>
         <span class="badge badge-w">周一重置</span>
         <div class="sec-line"></div>
+        <button class="toggle-all-btn" id="wk-toggle-all" onclick="toggleAllCollapse()">折叠全部</button>
       </div>
       <div class="tscroll" id="wk-wrap"></div>
       <div id="wk-add-fab" class="sp-add-fab" onclick="openAddWkModal()">＋ 添加周常列</div>
@@ -1081,6 +1088,7 @@ table.jt tr.row-done td.td-done{background:rgba(46,112,80,.12)!important}
         <div class="sec-line"></div>
         <span class="note-sm">北京时间每周一 07:00 重置</span>
         <button class="dn-filter-btn" id="dn-filter-toggle" onclick="togDnFilter()">筛选角色 ▾</button>
+        <button class="toggle-all-btn" id="dn-toggle-all" onclick="toggleAllCollapse()">折叠全部</button>
       </div>
       <div class="dn-filter-panel" id="dn-filter-panel"></div>
       <div class="tscroll" id="dn-wrap"></div>
@@ -2874,6 +2882,7 @@ document.addEventListener('scroll', e=>{
 // ══════════════════════════════════════════
 renderTabs();
 showTab('event', null);
+updToggleAllBtns();
 recompWkStats();
 recompDcStats();
 renderPriorityBanner();
@@ -2896,6 +2905,32 @@ function toggleCollapse(aid){
   const isCollapsed=S.collapsed.includes(aid);
   document.querySelectorAll(`tr.acct-row[data-acid="${aid}"] .acct-col-btn`).forEach(btn=>{
     btn.classList.toggle('collapsed',isCollapsed);
+  });
+  updToggleAllBtns();
+}
+function toggleAllCollapse(){
+  const allIds=ACCTS.map(ac=>ac.id);
+  const allCollapsed=allIds.every(id=>S.collapsed.includes(id));
+  if(allCollapsed){
+    S.collapsed=S.collapsed.filter(id=>!allIds.includes(id));
+  } else {
+    allIds.forEach(id=>{if(!S.collapsed.includes(id))S.collapsed.push(id);});
+  }
+  sv();
+  allIds.forEach(id=>{
+    const col=S.collapsed.includes(id);
+    document.querySelectorAll(`tr[data-acct="${id}"]`).forEach(r=>r.classList.toggle('char-row-hidden',col));
+    document.querySelectorAll(`tr.acct-row[data-acid="${id}"] .acct-col-btn`).forEach(btn=>btn.classList.toggle('collapsed',col));
+  });
+  updToggleAllBtns();
+}
+function updToggleAllBtns(){
+  const allIds=ACCTS.map(ac=>ac.id);
+  const allCollapsed=allIds.length>0&&allIds.every(id=>S.collapsed.includes(id));
+  const lbl=allCollapsed?'展开全部':'折叠全部';
+  ['ev-toggle-all','wk-toggle-all','dn-toggle-all'].forEach(bid=>{
+    const b=document.getElementById(bid);
+    if(b)b.textContent=lbl;
   });
 }
 
