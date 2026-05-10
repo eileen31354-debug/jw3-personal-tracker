@@ -917,7 +917,9 @@ table.jt th.tk:hover .wk-edit-btn,.wk-edit-btn:focus{color:rgba(74,122,136,.5)}
 @keyframes dotBreath{0%,100%{box-shadow:0 0 0 0 rgba(74,144,104,.7)}60%{box-shadow:0 0 0 4px rgba(74,144,104,0)}}
 /* ── Collapse toggle ── */
 .acct-row td{cursor:pointer;user-select:none}
-.acct-col-btn{background:none;border:none;cursor:pointer;color:var(--gold2);font-size:.82rem;padding:0 6px;transition:transform .15s;flex-shrink:0}
+.acct-col-btn{background:none;border:none;cursor:pointer;padding:2px 6px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+.acct-col-btn .chev{display:inline-block;width:6px;height:6px;border-right:1.8px solid var(--gold2);border-bottom:1.8px solid var(--gold2);transform:rotate(45deg);transition:transform .2s ease;margin-bottom:2px}
+.acct-col-btn.collapsed .chev{transform:rotate(-45deg);margin-bottom:0}
 .acct-actions{display:flex;align-items:center;gap:8px}
 .wk-acct-prog{margin-left:auto;font-size:.65rem;font-family:'Noto Sans SC',sans-serif;
   font-variant-numeric:tabular-nums;font-weight:700;padding:1px 8px;border-radius:10px;
@@ -1407,7 +1409,7 @@ function renderEv(){
       if(tk.type==='signin'){ if(gec(ev.id,ac.id,tk.id)<tk.days) acAllDone=false; }
       else { ac.chars.forEach(ch=>{ if(!gec(ev.id,ch.id,tk.id)) acAllDone=false; }); }
     }));
-    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsed?'▶':'▼'}</button><span>${ac.lbl}</span><button class="acct-onedone${acAllDone?' clear':''}" onclick="event.stopPropagation();acctOneDone('${ac.id}',this)" title="${acAllDone?'一键清空所有任务进度':'全角色日常一键完成'}">${acAllDone?'一键清空':'一键完成'}</button></div>`;
+    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn${collapsed?' collapsed':''}" onclick="event.stopPropagation();toggleCollapse('${ac.id}')"><span class="chev"></span></button><span>${ac.lbl}</span><button class="acct-onedone${acAllDone?' clear':''}" onclick="event.stopPropagation();acctOneDone('${ac.id}',this)" title="${acAllDone?'一键清空所有任务进度':'全角色日常一键完成'}">${acAllDone?'一键清空':'一键完成'}</button></div>`;
 
     ac.chars.forEach((ch, chIdx)=>{
       const row = tbody.insertRow(); row.dataset.acct=ac.id;
@@ -1702,7 +1704,7 @@ function renderWk(){
     ac.chars.forEach(ch=>{ tasks.forEach(t=>{ if(t.chars.includes(ch.id)){acTot++;if(gwc(ch.id,t.id))acDn++;} }); });
     const acPct=acTot?Math.round(acDn/acTot*100):0;
     const acCls=acDn===acTot&&acTot>0?'wk-prog-done':acDn>0?'wk-prog-part':'wk-prog-none';
-    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsedWk?'▶':'▼'}</button><span>${ac.lbl}</span><span class="wk-acct-prog ${acCls}">${acDn}/${acTot}</span></div>`;
+    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn${collapsedWk?' collapsed':''}" onclick="event.stopPropagation();toggleCollapse('${ac.id}')"><span class="chev"></span></button><span>${ac.lbl}</span><span class="wk-acct-prog ${acCls}">${acDn}/${acTot}</span></div>`;
 
     ac.chars.forEach(ch=>{
       const row=tbody.insertRow(); row.dataset.acct=ac.id;
@@ -2453,7 +2455,7 @@ function renderShop(){
     ar.onclick=function(e){if(e.target.tagName!=='BUTTON')toggleCollapse(ac.id)};
     const ad=ar.insertCell(); ad.colSpan=1+cols.length;
     const collapsedSh=S.collapsed.includes(ac.id);
-    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsedSh?'▶':'▼'}</button><span>${ac.lbl}</span></div>`;
+    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn${collapsedSh?' collapsed':''}" onclick="event.stopPropagation();toggleCollapse('${ac.id}')"><span class="chev"></span></button><span>${ac.lbl}</span></div>`;
     ac.chars.forEach(function(ch){
       const row=tbody.insertRow(); row.dataset.acct=ac.id;
       if(S.collapsed.includes(ac.id)) row.classList.add('char-row-hidden');
@@ -2573,7 +2575,7 @@ function renderCollect(){
     ar.onclick=function(e){if(e.target.tagName!=='BUTTON')toggleCollapse(ac.id)};
     var ad=ar.insertCell(); ad.colSpan=1+cols.length;
     var collapsedCl=S.collapsed.includes(ac.id);
-    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsedCl?'▶':'▼'}</button><span>${ac.lbl}</span></div>`;
+    ad.innerHTML=`<div class="acct-actions"><button class="acct-col-btn${collapsedCl?' collapsed':''}" onclick="event.stopPropagation();toggleCollapse('${ac.id}')"><span class="chev"></span></button><span>${ac.lbl}</span></div>`;
     ac.chars.forEach(function(ch){
       var row=tbody.insertRow(); row.dataset.acct=ac.id;
       if(S.collapsed.includes(ac.id)) row.classList.add('char-row-hidden');
@@ -2684,7 +2686,7 @@ function renderDungeon(){
     const acPct=acTot?Math.round(acDn/acTot*100):0;
     const acCls=acDn===acTot&&acTot>0?'full':acDn>0?'part':'none';
     ad.innerHTML=`<div class="acct-actions">
-      <button class="acct-col-btn" onclick="event.stopPropagation();toggleCollapse('${ac.id}')">${collapsedDn?'▶':'▼'}</button>
+      <button class="acct-col-btn${collapsedDn?' collapsed':''}" onclick="event.stopPropagation();toggleCollapse('${ac.id}')"><span class="chev"></span></button>
       <span>${ac.lbl}</span>
       <div class="dn-ac-prog">
         <div class="dn-ac-bar-wrap"><div class="dn-ac-bar-fill${acCls==='full'?' full':''}" style="width:${acPct}%"></div></div>
@@ -2891,8 +2893,10 @@ function toggleCollapse(aid){
   if(idx>=0) S.collapsed.splice(idx,1); else S.collapsed.push(aid);
   sv();
   document.querySelectorAll(`tr[data-acct="${aid}"]`).forEach(r=>r.classList.toggle('char-row-hidden'));
-  const btn=document.querySelector(`tr.acct-row[data-acid="${aid}"] .acct-col-btn`);
-  if(btn) btn.textContent=S.collapsed.includes(aid)?'▶':'▼';
+  const isCollapsed=S.collapsed.includes(aid);
+  document.querySelectorAll(`tr.acct-row[data-acid="${aid}"] .acct-col-btn`).forEach(btn=>{
+    btn.classList.toggle('collapsed',isCollapsed);
+  });
 }
 
 // ── Account one-click complete/clear toggle (events tab only) ──
