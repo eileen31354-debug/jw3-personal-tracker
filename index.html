@@ -1160,6 +1160,9 @@ const ACCTS = [
     {id:'c11',n:'花姐',  col:'#8F81AB',txt:'#564D67',main:false,icon:'万花.png'},
   ]},
   {id:'a5',lbl:'账号五',chars:[
+    {id:'c16',n:'刀刀',  col:'#8C8C94',txt:'#54545A',main:true, icon:'刀宗.png'},
+  ]},
+  {id:'a6',lbl:'账号六',chars:[
     {id:'c12',n:'二小姐',col:'#CBA574',txt:'#7A6346',main:false,icon:'藏剑.png'},
     {id:'c13',n:'喵姐',  col:'#AF5F47',txt:'#69392B',main:false,icon:'明教.png'},
     {id:'c14',n:'炮萝',  col:'#4F8CC4',txt:'#2F5476',main:false,icon:'唐门.png'},
@@ -2639,16 +2642,16 @@ function getDnDeadlineBadge(key){
   if(key!=='upper_bow'&&key!=='lower_bow') return '';
   // Convert local time to Beijing (UTC+8) wall-clock
   const now=Date.now();
-  const bjNow=now+(8*60+new Date().getTimezoneOffset())*60000;
+  const bjNow=now+8*3600000;
   const bj=new Date(bjNow);
   const day=bj.getUTCDay(); // 0=Sun 1=Mon … 5=Fri 6=Sat
   const sec=bj.getUTCHours()*3600+bj.getUTCMinutes()*60+bj.getUTCSeconds();
   const s7=25200; // 07:00 in seconds
   let daysTo, closed;
   if(key==='upper_bow'){
-    // window: Mon 07:00 → Fri 07:00
-    closed=(day===5&&sec>=s7)||day===6||day===0;
-    daysTo=(5-day+7)%7;
+    // window: Mon 07:00 → Thu 07:00
+    closed=(day===4&&sec>=s7)||day===5||day===6||day===0;
+    daysTo=(4-day+7)%7;
   } else {
     // lower_bow  window: Fri 07:00 → Mon 07:00
     const notStarted=(day===1&&sec>=s7)||day===2||day===3||day===4||(day===5&&sec<s7);
