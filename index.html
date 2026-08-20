@@ -2649,9 +2649,9 @@ function getDnDeadlineBadge(key){
   const s7=25200; // 07:00 in seconds
   let daysTo, closed;
   if(key==='upper_bow'){
-    // window: Mon 07:00 → Thu 07:00
-    closed=(day===4&&sec>=s7)||day===5||day===6||day===0;
-    daysTo=(4-day+7)%7;
+    // window: Mon 07:00 → Fri 07:00
+    closed=(day===5&&sec>=s7)||day===6||day===0;
+    daysTo=(5-day+7)%7;
   } else {
     // lower_bow  window: Fri 07:00 → Mon 07:00
     const notStarted=(day===1&&sec>=s7)||day===2||day===3||day===4||(day===5&&sec<s7);
