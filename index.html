@@ -792,7 +792,30 @@ table.jt th.tk:hover .wk-edit-btn,.wk-edit-btn:focus{color:rgba(74,122,136,.5)}
   justify-content:center;font-size:1.3rem;flex-shrink:0;border:2px solid}
 .craft-info{flex:1}
 .craft-ttl{font-size:1.05rem;font-weight:700;margin-bottom:2px}
-.craft-own{font-size:.85rem;font-weight:600;margin-bottom:9px;opacity:1}
+.craft-own{font-size:.85rem;font-weight:600;margin-bottom:9px;opacity:1;display:flex;align-items:center;gap:4px}
+.craft-own-box{position:relative;display:inline-flex;align-items:center;gap:5px;
+  padding:1px 6px;margin-left:-6px;border:1px dashed transparent;border-radius:4px;
+  transition:background .15s,border-color .15s,box-shadow .15s}
+.craft-own-box.editing{border-color:rgba(160,112,48,.55);background:rgba(224,184,112,.12);
+  box-shadow:0 0 0 3px rgba(224,184,112,.12)}
+.craft-own-name{cursor:pointer;display:inline-flex;align-items:center;gap:3px}
+.craft-own-arrow{font-size:.55rem;color:var(--gold);visibility:hidden;transition:transform .15s}
+.craft-own-box.editing .craft-own-arrow{visibility:visible;transform:rotate(180deg)}
+.craft-lock{font-size:.75rem;opacity:.12;cursor:pointer;transition:opacity .2s,filter .2s}
+.craft-own:hover .craft-lock{opacity:.55}
+.craft-own-box.editing .craft-lock{opacity:1;filter:drop-shadow(0 0 2px rgba(160,112,48,.6))}
+.craft-own-panel{position:absolute;top:calc(100% + 4px);left:0;min-width:100%;z-index:500;
+  background:#FDF9F3;border:1px solid rgba(160,112,48,.35);border-radius:4px;padding:4px 0;
+  box-shadow:0 6px 18px rgba(80,50,10,.14),0 2px 6px rgba(0,0,0,.07);
+  font-weight:400;max-height:320px;overflow-y:auto}
+.craft-own-grp{font-size:.72rem;font-weight:500;color:rgba(141,115,84,.6);letter-spacing:.1em;
+  padding:8px 12px 4px;border-top:1px solid rgba(160,112,48,.1);margin-top:2px}
+.craft-own-grp:first-child{border-top:none;margin-top:0}
+.craft-own-opt{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 24px;cursor:pointer;
+  font-size:.86rem;color:#5C4B37;white-space:nowrap;transition:background .1s}
+.craft-own-opt img{width:18px;height:18px;object-fit:contain;flex-shrink:0}
+.craft-own-opt:hover{background:rgba(160,112,48,.1)}
+.craft-own-opt.sel{background:#8D7354;color:#fff;font-weight:600}
 .craft-note{width:100%;padding:7px 10px;font-size:.9rem;font-family:'Noto Serif SC',serif;
   resize:vertical;min-height:62px;outline:none;border-radius:3px;
   background:rgba(255,255,255,.7);border:1px solid}
@@ -1198,10 +1221,10 @@ const DEF_REMS = [
 ];
 
 const CRAFTS = [
-  {id:'cr1',n:'铸造',own:'药姐',ico:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="22" x2="14" y2="10"/><path d="M14 10l2-2 4 4-2 2z"/></svg>',cls:'craft-c1'},
-  {id:'cr2',n:'缝纫',own:'花姐',ico:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="9" y1="6" x2="20" y2="17"/><line x1="9" y1="18" x2="20" y2="7"/></svg>',cls:'craft-c2'},
-  {id:'cr3',n:'医术',own:'扇姐',ico:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11c0 5.5 3.5 9 8 9s8-3.5 8-9"/><line x1="2" y1="11" x2="22" y2="11"/><line x1="10" y1="11" x2="18" y2="3"/></svg>',cls:'craft-c3'},
-  {id:'cr4',n:'烹饪',own:'秀萝',ico:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7l2 12h10l2-12"/><line x1="3" y1="7" x2="21" y2="7"/><path d="M5 7V5H3V7"/><path d="M19 7V5h2v2"/></svg>',cls:'craft-c4'},
+  {id:'cr1',n:'铸造',own:'c1',ico:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="22" x2="14" y2="10"/><path d="M14 10l2-2 4 4-2 2z"/></svg>',cls:'craft-c1'},
+  {id:'cr2',n:'缝纫',own:'c15',ico:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="9" y1="6" x2="20" y2="17"/><line x1="9" y1="18" x2="20" y2="7"/></svg>',cls:'craft-c2'},
+  {id:'cr3',n:'医术',own:'c2',ico:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11c0 5.5 3.5 9 8 9s8-3.5 8-9"/><line x1="2" y1="11" x2="22" y2="11"/><line x1="10" y1="11" x2="18" y2="3"/></svg>',cls:'craft-c3'},
+  {id:'cr4',n:'烹饪',own:'c7',ico:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7l2 12h10l2-12"/><line x1="3" y1="7" x2="21" y2="7"/><path d="M5 7V5H3V7"/><path d="M19 7V5h2v2"/></svg>',cls:'craft-c4'},
 ];
 
 // ══════════════════════════════════════════
@@ -2164,12 +2187,43 @@ function delRem(id){
 // S.ct = { craftId: [ {id, txt, done:false}, ... ] }
 function getCraftTodos(cid){ return S.ct && S.ct[cid] ? S.ct[cid] : []; }
 function saveCraftTodos(cid, items){ if(!S.ct)S.ct={}; S.ct[cid]=items; sv(); }
+// S.craftOwn = { craftId: charId } — overrides the default owner in CRAFTS
+function getCraftOwner(c){
+  const id=(S.craftOwn && S.craftOwn[c.id]) || c.own;
+  return ALL_CH.find(ch=>ch.id===id) || ALL_CH.find(ch=>ch.id===c.own);
+}
+// Owner is locked by default; unlock to pick, choosing a char saves & relocks.
+// Click outside / Esc / the 🔓 relocks without change.
+let craftOwnEditing = null;
+function toggleCraftOwner(cid){
+  craftOwnEditing = craftOwnEditing===cid ? null : cid;
+  renderCraft();
+}
+function pickCraftOwner(cid,chId){
+  if(!S.craftOwn)S.craftOwn={};
+  S.craftOwn[cid]=chId; sv();
+  craftOwnEditing=null;
+  renderCraft(); renderPriorityBanner();
+}
+// 'click' (not mousedown) so a click that just re-rendered the box still finds it via closest()
+document.addEventListener('click',e=>{
+  if(craftOwnEditing&&!e.target.closest('.craft-own-box')){ craftOwnEditing=null; renderCraft(); }
+});
+document.addEventListener('keydown',e=>{
+  if(craftOwnEditing&&e.key==='Escape'){ craftOwnEditing=null; renderCraft(); }
+});
 
 let craftUndo = null; // { cid, item, idx }
 
 function renderCraft(){
   if(!S.ct) S.ct={};
   const g=document.getElementById('craft-list'); g.innerHTML='';
+  // Same-name chars (e.g. two 花姐) are told apart by main/alt tag
+  const dupNames=new Set(ALL_CH.filter((ch,i)=>ALL_CH.findIndex(x=>x.n===ch.n)!==i).map(ch=>ch.n));
+  const chLabel=ch=>esc(ch.n)+(dupNames.has(ch.n)?(ch.main?'（主号）':'（小号）'):'');
+  const ownPanel=(cid,curId)=>`<div class="craft-own-panel">${ACCTS.map(a=>
+    `<div class="craft-own-grp">${esc(a.lbl)}</div>${a.chars.map(ch=>
+      `<div class="craft-own-opt${ch.id===curId?' sel':''}" onclick="pickCraftOwner('${cid}','${ch.id}')">${ch.icon?`<img src="${ch.icon}"/>`:''}${chLabel(ch)}</div>`).join('')}`).join('')}</div>`;
   CRAFTS.forEach(c=>{
     const todos=getCraftTodos(c.id);
     const d=document.createElement('div');
@@ -2190,7 +2244,11 @@ function renderCraft(){
       <div class="craft-icon">${c.ico}</div>
       <div class="craft-info">
         <div class="craft-ttl">${c.n}</div>
-        <div class="craft-own">负责：${c.own}</div>
+        <div class="craft-own">负责：<span class="craft-own-box${craftOwnEditing===c.id?' editing':''}">
+          <span class="craft-own-name" title="点击修改负责角色" onclick="toggleCraftOwner('${c.id}')">${chLabel(getCraftOwner(c))}<span class="craft-own-arrow">▾</span></span>
+          <span class="craft-lock" title="${craftOwnEditing===c.id?'取消修改':'解锁修改'}" onclick="toggleCraftOwner('${c.id}')">${craftOwnEditing===c.id?'🔓':'🔒'}</span>
+          ${craftOwnEditing===c.id?ownPanel(c.id,getCraftOwner(c).id):''}
+        </span></div>
         <div class="craft-todos" id="ct-${c.id}">${todosHtml}</div>
         <div class="craft-add-row">
           <input class="craft-add-inp" id="ci-${c.id}" placeholder="添加待制作物品…"
@@ -2624,10 +2682,10 @@ function renderCollect(){
 // DUNGEON CD
 // ══════════════════════════════════════════
 const DUNGEON_COLS = [
-  {key:'hero_lf',   bold:'英雄', rest:'阆风悬城'},
-  {key:'norm_gy',   bold:'普通', rest:'阆风悬城'},
-  {key:'upper_bow', bold:'上半周', rest:'十人阆风'},
-  {key:'lower_bow', bold:'下半周', rest:'十人阆风'},
+  {key:'hero_lf',   bold:'英雄', rest:'洛阳之战'},
+  {key:'norm_gy',   bold:'普通', rest:'洛阳之战'},
+  {key:'upper_bow', bold:'上半周', rest:'十人洛阳'},
+  {key:'lower_bow', bold:'下半周', rest:'十人洛阳'},
   {key:'weekly1',   bold:'',    rest:'十人周常一'},
   {key:'weekly2',   bold:'',    rest:'十人周常二'},
 ];
@@ -2807,7 +2865,7 @@ function renderPriorityBanner(){
   const craftItems=[];
   CRAFTS.forEach(c=>{
     if(getCraftTodos(c.id).some(t=>!t.done)){
-      craftItems.push({craft:c,ch:ALL_CH.find(ch=>ch.n===c.own)||{n:c.own,icon:null}});
+      craftItems.push({craft:c,ch:getCraftOwner(c)});
     }
   });
   if(urgChars.length===0&&normChars.length===0&&craftItems.length===0){
